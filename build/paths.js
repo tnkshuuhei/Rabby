@@ -12,7 +12,7 @@ module.exports = {
   notificationHtml: rootResolve('src/ui/notification.html'),
   indexHtml: rootResolve('src/ui/index.html'),
   backgroundHtml: rootResolve('src/background/background.html'),
-  dist: rootResolve('dist'),
+  dist: process.env.RABBY_EXT_DIST || rootResolve('dist'),
 
   rootResolve,
 }
