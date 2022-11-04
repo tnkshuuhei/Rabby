@@ -1,8 +1,7 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { last } from 'lodash';
-
+import { last, minBy } from 'lodash';
 import { connectStore } from '@/ui/store';
 import { useAccount } from '@/ui/store-hooks';
 import { useInfiniteScroll } from 'ahooks';
@@ -12,6 +11,8 @@ import { useWallet, useWalletOld } from 'ui/utils';
 import { HistoryItem } from './HistoryItem';
 import { Loading } from './Loading';
 import './style.less';
+import { TransactionGroup } from '@/background/service/transactionHistory';
+import { TransactionItem } from '../TransactionHistory/TransactionItem';
 
 const PAGE_COUNT = 10;
 
@@ -21,6 +22,7 @@ const History = () => {
 
   const ref = useRef<HTMLDivElement | null>(null);
   const [account] = useAccount();
+  const [pendingList, setPendingList] = useState<TransactionGroup[]>([]);
 
   const fetchData = async (startTime = 0) => {
     const { address } = account!;
@@ -45,7 +47,7 @@ const History = () => {
     };
   };
 
-  const { data, loading, loadingMore } = useInfiniteScroll(
+  const { data, loading, loadingMore, reload } = useInfiniteScroll(
     (d) => fetchData(d?.last),
     {
       target: ref,
@@ -57,9 +59,44 @@ const History = () => {
 
   const isEmpty = (data?.list?.length || 0) <= 0 && !loading;
 
+  const init = async () => {
+    const { pendings } = await wallet.getTransactionHistory(account!.address);
+    setPendingList(pendings);
+  };
+
+  const handleTxComplete = () => {
+    init();
+    reload();
+  };
+
+  useEffect(() => {
+    init();
+  }, []);
+
   return (
     <div className="txs-history" ref={ref}>
       <PageHeader fixed>{t('Transactions')}</PageHeader>
+      {pendingList.length > 0 && (
+        <>
+          <div className="txs-history__pending">
+            {pendingList.map((item) => (
+              <TransactionItem
+                item={item}
+                key={`${item.chainId}-${item.nonce}`}
+                canCancel={
+                  minBy(
+                    pendingList.filter((i) => i.chainId === item.chainId),
+                    (i) => i.nonce
+                  )?.nonce === item.nonce
+                }
+                onComplete={() => handleTxComplete()}
+              />
+            ))}
+          </div>
+
+          <p className="subtitle">{t('Completed transactions')}</p>
+        </>
+      )}
       {data?.list.map((item) => (
         <HistoryItem
           data={item}

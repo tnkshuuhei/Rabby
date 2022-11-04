@@ -17,6 +17,7 @@ import { useWallet, useWalletOld } from 'ui/utils';
 import './style.less';
 import { useRabbyDispatch, useRabbySelector } from '@/ui/store';
 import IconContacts from 'ui/assets/swap/contact.svg';
+import IconActivities from 'ui/assets/dashboard/activities.svg';
 import IconSettingWidget from 'ui/assets/settings-widget.svg';
 import IconDiscord from 'ui/assets/discord.svg';
 import { Contacts, Widget } from '..';
@@ -236,6 +237,13 @@ const Settings = ({ visible, onClose }: SettingsProps) => {
     //   },
     // },
     {
+      leftIcon: IconActivities,
+      content: t('Signed Records'),
+      onClick: () => {
+        history.push('/activities');
+      },
+    },
+    {
       leftIcon: IconContacts,
       content: t('Contacts'),
       onClick: () => {
@@ -243,17 +251,17 @@ const Settings = ({ visible, onClose }: SettingsProps) => {
         reportSettings('contract');
       },
     },
-    {
-      leftIcon: IconSettingWidget,
-      content: t('Widget'),
-      onClick: () => {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        //@ts-ignore
-        onClose?.();
-        setWidgetVisible(true);
-        reportSettings('widget');
-      },
-    },
+    // {
+    //   leftIcon: IconSettingWidget,
+    //   content: t('Widget'),
+    //   onClick: () => {
+    //     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    //     //@ts-ignore
+    //     onClose?.();
+    //     setWidgetVisible(true);
+    //     reportSettings('widget');
+    //   },
+    // },
 
     {
       leftIcon: IconReset,

@@ -309,7 +309,7 @@ export default ({
       'send',
       'receive',
       'gasTopUp',
-      'activities',
+      // 'activities',
       'transactions',
       'dapps',
       'security',
