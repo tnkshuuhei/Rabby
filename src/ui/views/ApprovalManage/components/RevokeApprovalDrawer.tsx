@@ -236,7 +236,7 @@ export const RevokeApprovalDrawer = (props: {
               <span
                 className={clsx(
                   'mr-[14px] text-[13px] text-gray-subTitle',
-                  item.type === 'token'
+                  item.type !== 'token' && 'hidden'
                 )}
               >
                 {displayApprovalValue}
