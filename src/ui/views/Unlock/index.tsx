@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { Input, Form, Button } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useHistory } from 'react-router-dom';
+import * as Sentry from '@sentry/browser';
 import { useWallet, useApproval, useWalletRequest, getUiType } from 'ui/utils';
 
 import './style.less';
@@ -22,13 +23,19 @@ const Unlock = () => {
 
   const [run] = useWalletRequest(wallet.unlock, {
     onSuccess() {
+      console.log('[wallet] unlock success');
+      Sentry.captureMessage('[wallet] unlock success');
       if (UiType.isNotification) {
         resolveApproval();
       } else {
+        console.log('[wallet] go home');
+        Sentry.captureMessage('[wallet] go home');
         history.replace('/');
       }
     },
     onError(err) {
+      Sentry.captureException(err);
+      console.error('[wallet] unlock error', err);
       form.setFields([
         {
           name: 'password',

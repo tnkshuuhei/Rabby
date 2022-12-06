@@ -4,6 +4,7 @@ import { Redirect } from 'react-router-dom';
 import { getUiType, useApproval, useWallet } from 'ui/utils';
 import { Spin } from 'ui/component';
 import { Approval } from 'background/service/notification';
+import * as Sentry from '@sentry/browser';
 
 const SortHat = () => {
   const wallet = useWallet();
@@ -11,6 +12,9 @@ const SortHat = () => {
   // eslint-disable-next-line prefer-const
   let [getApproval] = useApproval();
   const UIType = getUiType();
+
+  console.log('[wallet] home page');
+  Sentry.captureMessage('[wallet] home page');
 
   const loadView = async () => {
     const isInNotification = UIType.isNotification;

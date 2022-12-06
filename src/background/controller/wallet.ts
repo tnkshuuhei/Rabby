@@ -866,9 +866,13 @@ export class WalletController extends BaseController {
   };
 
   unlock = async (password: string) => {
+    console.log('[wallet] start unlock');
+    Sentry.captureMessage('[wallet] start unlock');
     const alianNameInited = await preferenceService.getInitAlianNameStatus();
     const alianNames = contactBookService.listAlias();
     await keyringService.submitPassword(password);
+    console.log('[wallet] submit pwd success');
+    Sentry.captureMessage('[wallet] submit pwd success');
     sessionService.broadcastEvent('unlock');
     if (!alianNameInited && alianNames.length === 0) {
       this.initAlianNames();
