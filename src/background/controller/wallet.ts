@@ -70,6 +70,7 @@ import { addHexPrefix, unpadHexString } from 'ethereumjs-util';
 import { ProviderRequest } from './provider/type';
 import { QuoteResult } from '@rabby-wallet/rabby-swap/dist/quote';
 import transactionWatcher from '../service/transactionWatcher';
+import { getTx, requestRPC } from 'background/utils/rpc';
 
 const stashKeyrings: Record<string | number, any> = {};
 
@@ -2342,6 +2343,157 @@ export class WalletController extends BaseController {
   continuePhishing = async (url: string) => {
     await preferenceService.continuePhishing(url);
   };
+
+  gasMarket = async (chainServerId: string, customGas?: number) => {
+    const res = await openapiService.gasMarket(chainServerId, customGas);
+    if (res.length <= 0) {
+      const gasPrice = await requestRPC({
+        method: 'eth_gasPrice',
+        params: [],
+        chainServerId,
+      });
+      const wei = Number(gasPrice);
+      return [
+        {
+          level: 'slow',
+          front_tx_count: 0,
+          price: Math.floor(wei * 0.9),
+          estimated_seconds: 0,
+          base_fee: 0,
+        },
+        {
+          level: 'normal',
+          front_tx_count: 0,
+          price: Number(gasPrice),
+          estimated_seconds: 0,
+          base_fee: 0,
+        },
+        {
+          level: 'fast',
+          front_tx_count: 0,
+          price: Number(wei * 1.1),
+          estimated_seconds: 0,
+          base_fee: 0,
+        },
+        {
+          level: 'custom',
+          price: 0,
+          front_tx_count: 0,
+          estimated_seconds: 0,
+          base_fee: 0,
+        },
+      ];
+    } else {
+      return res;
+    }
+  };
+
+  preExecTx = async ({
+    tx,
+    origin,
+    address,
+    updateNonce,
+    pending_tx_list,
+  }: {
+    tx: Tx;
+    origin: string;
+    address: string;
+    updateNonce: boolean;
+    pending_tx_list: Tx[];
+  }) => {
+    const preExecResult = await openapiService.preExecTx({
+      tx,
+      origin,
+      address,
+      updateNonce,
+      pending_tx_list,
+    });
+    let isLocalSupportChain = false;
+
+    if (preExecResult.gas === null || preExecResult.native_token === null) {
+      const chain = Object.values(CHAINS).find((i) => i.id === tx.chainId);
+      isLocalSupportChain = true;
+      if (!chain) throw `chainId ${tx.chainId} is not found`;
+      try {
+        const gas = await requestRPC({
+          method: 'eth_estimateGas',
+          params: [
+            {
+              from: tx.from,
+              to: tx.to,
+              data: tx.data,
+              value: tx.value,
+            },
+          ],
+          chainServerId: chain.serverId,
+        });
+        preExecResult.gas = {
+          success: true,
+          gas_used: Number(gas),
+          estimated_gas_cost_usd_value: 0,
+          estimated_gas_cost_value: 0,
+          estimated_gas_used: 0,
+          estimated_seconds: 0,
+        };
+      } catch (e) {
+        preExecResult.gas = {
+          success: false,
+          gas_used: 0,
+          estimated_gas_cost_usd_value: 0,
+          estimated_gas_cost_value: 0,
+          estimated_gas_used: 0,
+          estimated_seconds: 0,
+        };
+      }
+      try {
+        const nativeTokenBalance = await requestRPC({
+          method: 'eth_getBalance',
+          params: [address],
+          chainServerId: chain.serverId,
+        });
+        preExecResult.native_token = {
+          amount: new BigNumber(nativeTokenBalance).div(1e18).toNumber(),
+          chain: chain.serverId,
+          decimals: 18,
+          display_symbol: chain.nativeTokenSymbol,
+          id: chain.nativeTokenAddress,
+          is_core: true,
+          is_verified: true,
+          is_wallet: true,
+          logo_url: chain.nativeTokenLogo,
+          name: chain.nativeTokenSymbol,
+          optimized_symbol: chain.nativeTokenSymbol,
+          price: 0,
+          symbol: chain.nativeTokenSymbol,
+          time_at: 0,
+        };
+      } catch (e) {
+        preExecResult.native_token = {
+          amount: 0,
+          chain: chain.serverId,
+          decimals: 18,
+          display_symbol: chain.nativeTokenSymbol,
+          id: chain.nativeTokenAddress,
+          is_core: true,
+          is_verified: true,
+          is_wallet: true,
+          logo_url: chain.nativeTokenLogo,
+          name: chain.nativeTokenSymbol,
+          optimized_symbol: chain.nativeTokenSymbol,
+          price: 0,
+          symbol: chain.nativeTokenSymbol,
+          time_at: 0,
+        };
+      }
+    }
+
+    return {
+      ...preExecResult,
+      isLocalSupportChain,
+    };
+  };
+
+  getTx = getTx;
 }
 
 export default new WalletController();

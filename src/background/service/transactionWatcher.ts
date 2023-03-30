@@ -4,6 +4,7 @@ import {
   transactionHistoryService,
 } from 'background/service';
 import { createPersistStore, isSameAddress } from 'background/utils';
+import { requestRPC } from 'background/utils/rpc';
 import { notification } from 'background/webapi';
 import { CHAINS, CHAINS_ENUM } from 'consts';
 import { format } from '@/utils';
@@ -63,12 +64,19 @@ class TransactionWatcher {
     }
     const { hash, chain } = this.store.pendingTx[id];
 
-    return openapiService
-      .ethRpc(CHAINS[chain].serverId, {
+    const result = await openapiService.ethRpc(CHAINS[chain].serverId, {
+      method: 'eth_getTransactionReceipt',
+      params: [hash],
+    });
+    if (result.id === -1 && result.result === null) {
+      const res = await requestRPC({
         method: 'eth_getTransactionReceipt',
         params: [hash],
-      })
-      .catch(() => null);
+        chainServerId: CHAINS[chain].serverId,
+      });
+      return res;
+    }
+    return result;
   };
 
   notify = async (id: string, txReceipt) => {

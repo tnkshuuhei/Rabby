@@ -160,9 +160,7 @@ const SendToken = () => {
   const isNativeToken = currentToken.id === CHAINS[chain].nativeTokenAddress;
 
   const fetchGasList = async () => {
-    const list: GasLevel[] = await wallet.openapi.gasMarket(
-      CHAINS[chain].serverId
-    );
+    const list: GasLevel[] = await wallet.gasMarket(CHAINS[chain].serverId);
     return list;
   };
 
@@ -577,8 +575,13 @@ const SendToken = () => {
     address: string
   ) => {
     const t = await wallet.openapi.getToken(address, chainId, id);
-    setCurrentToken(t);
-    setIsLoading(false);
+    if (!t) {
+      setCurrentToken(t);
+      setIsLoading(false);
+    } else {
+      // non-backend support chain
+      // await wallet.requestETHRpc();
+    }
   };
 
   const initByCache = async () => {

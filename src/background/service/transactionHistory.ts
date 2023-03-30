@@ -6,6 +6,7 @@ import { CHAINS, INTERNAL_REQUEST_ORIGIN, CHAINS_ENUM } from 'consts';
 import stats from '@/stats';
 import permissionService, { ConnectedSite } from './permission';
 import { nanoid } from 'nanoid';
+import { getTx } from '../utils/rpc';
 
 export interface TransactionHistoryItem {
   rawTx: Tx;
@@ -281,7 +282,7 @@ class TxHistory {
           .filter((tx) => !!tx)
           .filter((tx) => !tx.isSubmitFailed)
           .map((tx) =>
-            openapiService.getTx(
+            getTx(
               chain.serverId,
               tx.hash,
               Number(tx.rawTx.gasPrice || tx.rawTx.maxFeePerGas || 0)

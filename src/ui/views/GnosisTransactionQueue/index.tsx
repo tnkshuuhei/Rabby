@@ -285,7 +285,7 @@ const GnosisTransactionItem = ({
   }
 
   const init = async () => {
-    const res = await wallet.openapi.preExecTx({
+    const res = await wallet.preExecTx({
       tx: {
         chainId: Number(networkId),
         from: data.safe,

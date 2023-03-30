@@ -111,7 +111,7 @@ export default ({
     loading: gasPriceLoading,
   } = useAsync(async () => {
     try {
-      const marketGas: GasLevel[] = await wallet.openapi.gasMarket(
+      const marketGas: GasLevel[] = await wallet.gasMarket(
         currentConnectedSiteChainNativeToken
       );
       const selectedGasPice = marketGas.find((item) => item.level === 'slow')

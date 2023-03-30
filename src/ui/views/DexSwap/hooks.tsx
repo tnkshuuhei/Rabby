@@ -235,7 +235,7 @@ export const useGasAmount = <T extends ValidateTokenParam>(
           gasPrice: `0x${new BigNumber(gasPrice).toString(16)}`,
           gas: '0x0',
         };
-        const tokenApprovePreExecTx = await wallet.openapi.preExecTx({
+        const tokenApprovePreExecTx = await wallet.preExecTx({
           tx: tokenApproveTx,
           origin: INTERNAL_REQUEST_ORIGIN,
           address: userAddress,
@@ -303,7 +303,7 @@ export const useGasAmount = <T extends ValidateTokenParam>(
         );
       }
 
-      const swapPreExecTx = await wallet.openapi.preExecTx({
+      const swapPreExecTx = await wallet.preExecTx({
         tx: {
           ...data.tx,
           nonce: nextNonce,

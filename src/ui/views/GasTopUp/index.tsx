@@ -53,7 +53,7 @@ export const GasTopUp = () => {
     loading: gasLoading,
     error: instantGasError,
   } = useAsync(async () => {
-    const list = await wallet.openapi.gasMarket(CHAINS[chain].serverId);
+    const list = await wallet.gasMarket(CHAINS[chain].serverId);
     let instant = list[0];
     for (let i = 1; i < list.length; i++) {
       if (list[i].price > instant.price) {

@@ -14,7 +14,7 @@ export type RPCServiceStore = {
 const MAX = 4_294_967_295;
 let idCounter = Math.floor(Math.random() * MAX);
 
-function getUniqueId(): number {
+export function getUniqueId(): number {
   idCounter = (idCounter + 1) % MAX;
   return idCounter;
 }

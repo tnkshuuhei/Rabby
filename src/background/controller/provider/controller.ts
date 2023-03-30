@@ -49,6 +49,7 @@ import stats from '@/stats';
 import BigNumber from 'bignumber.js';
 import { AddEthereumChainParams } from 'ui/views/Approval/components/AddChain';
 import { formatTxMetaForRpcResult } from 'background/utils/tx';
+import { requestRPC } from 'background/utils/rpc';
 
 const reportSignText = (params: {
   method: string;
@@ -87,6 +88,7 @@ interface ApprovalRes extends Tx {
   traceId?: string;
   $ctx?: any;
   signingTxId?: string;
+  isLocalSupportChain?: boolean;
 }
 
 interface Web3WalletPermission {
@@ -203,7 +205,18 @@ class ProviderController extends BaseController {
           method,
           params,
         })
-        .then((result) => {
+        .then(async (result) => {
+          if (result.id === -1 && result.result === null) {
+            // non-endpoint support chain
+            const result = await requestRPC({ method, params, chainServerId });
+            RpcCache.set(currentAddress, {
+              method,
+              params,
+              result,
+              chainId: chainServerId,
+            });
+            return result;
+          }
           RpcCache.set(currentAddress, {
             method,
             params,
@@ -329,7 +342,7 @@ class ProviderController extends BaseController {
     const traceId = approvalRes.traceId;
     const extra = approvalRes.extra;
     const signingTxId = approvalRes.signingTxId;
-
+    const isLocalSupportChain = approvalRes.isLocalSupportChain;
     let signedTransactionSuccess = false;
     delete txParams.isSend;
     delete approvalRes.isSend;
@@ -341,6 +354,7 @@ class ProviderController extends BaseController {
     delete approvalRes.extra;
     delete approvalRes.$ctx;
     delete approvalRes.signingTxId;
+    delete approvalRes.isLocalSupportChain;
 
     let is1559 = is1559Tx(approvalRes);
     if (
@@ -533,6 +547,29 @@ class ProviderController extends BaseController {
             'eth_sendRawTransaction',
             [rawTx]
           );
+          try {
+            openapiService.traceTx(hash, traceId || '', CHAINS[chain].serverId);
+          } catch (e) {
+            // DO nothing
+          }
+        } else if (isLocalSupportChain) {
+          const txData: any = {
+            ...approvalRes,
+            gasLimit: approvalRes.gas,
+            r: addHexPrefix(signedTx.r),
+            s: addHexPrefix(signedTx.s),
+            v: addHexPrefix(signedTx.v),
+          };
+          if (is1559) {
+            txData.type = '0x2';
+          }
+          const tx = TransactionFactory.fromTxData(txData);
+          const rawTx = bufferToHex(tx.serialize());
+          hash = await requestRPC({
+            method: 'eth_sendRawTransaction',
+            params: [rawTx],
+            chainServerId: CHAINS[chain].serverId,
+          });
           try {
             openapiService.traceTx(hash, traceId || '', CHAINS[chain].serverId);
           } catch (e) {

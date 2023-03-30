@@ -327,7 +327,7 @@ const TransactionItem = ({
       item.txs
         .filter((tx) => !tx.isSubmitFailed)
         .map((tx) =>
-          wallet.openapi.getTx(
+          wallet.getTx(
             chain.serverId,
             tx.hash,
             Number(tx.rawTx.gasPrice || tx.rawTx.maxFeePerGas || 0)
@@ -412,7 +412,7 @@ const TransactionItem = ({
     const chainServerId = Object.values(CHAINS).find(
       (chain) => chain.id === item.chainId
     )!.serverId;
-    const gasLevels: GasLevel[] = await wallet.openapi.gasMarket(chainServerId);
+    const gasLevels: GasLevel[] = await wallet.gasMarket(chainServerId);
     const maxGasMarketPrice = maxBy(gasLevels, (level) => level.price)!.price;
     await wallet.sendRequest({
       method: 'eth_sendTransaction',
@@ -442,7 +442,7 @@ const TransactionItem = ({
     const chainServerId = Object.values(CHAINS).find(
       (chain) => chain.id === item.chainId
     )!.serverId;
-    const gasLevels: GasLevel[] = await wallet.openapi.gasMarket(chainServerId);
+    const gasLevels: GasLevel[] = await wallet.gasMarket(chainServerId);
     const maxGasMarketPrice = maxBy(gasLevels, (level) => level.price)!.price;
     await wallet.sendRequest({
       method: 'eth_sendTransaction',

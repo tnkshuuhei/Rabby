@@ -34,7 +34,7 @@ import {
   MINIMUM_GAS_LIMIT,
 } from 'consts';
 import { addHexPrefix, isHexPrefixed, isHexString } from 'ethereumjs-util';
-import React, { ReactNode, useEffect, useMemo, useState } from 'react';
+import React, { ReactNode, useEffect, useMemo, useState, useRef } from 'react';
 import { matomoRequestEvent } from '@/utils/matomo-request';
 import { useTranslation } from 'react-i18next';
 import IconGnosis from 'ui/assets/walletlogo/safe.svg';
@@ -895,6 +895,7 @@ const SignTx = ({ params, origin }: SignTxProps) => {
   const [safeInfo, setSafeInfo] = useState<SafeInfo | null>(null);
   const [maxPriorityFee, setMaxPriorityFee] = useState(0);
   const [nativeTokenBalance, setNativeTokenBalance] = useState('0x0');
+  const isLocalSupportChainRef = useRef(false);
 
   const gasExplainResponse = useExplainGas({
     gasUsed: recommendGasLimit,
@@ -975,7 +976,7 @@ const SignTx = ({ params, origin }: SignTxProps) => {
       setRealNonce(recommendNonce);
     } // do not overwrite nonce if from === to(cancel transaction)
     const { pendings } = await wallet.getTransactionHistory(address);
-    const res: ExplainTxResponse = await wallet.openapi.preExecTx({
+    const res = await wallet.preExecTx({
       tx: {
         ...tx,
         nonce: (updateNonce ? recommendNonce : tx.nonce) || '0x1', // set a mock nonce for explain if dapp not set it
@@ -1013,6 +1014,9 @@ const SignTx = ({ params, origin }: SignTxProps) => {
       chainId,
     });
     setRecommendGasLimit(`0x${gas.toString(16)}`);
+    if (res.isLocalSupportChain) {
+      isLocalSupportChainRef.current = true;
+    }
     let block = null;
     try {
       block = await wallet.requestETHRpc(
@@ -1226,6 +1230,7 @@ const SignTx = ({ params, origin }: SignTxProps) => {
         },
         $ctx: params.$ctx,
         signingTxId: approval.signingTxId,
+        isLocalSupportChain: isLocalSupportChainRef.current,
       });
 
       return;
@@ -1265,6 +1270,7 @@ const SignTx = ({ params, origin }: SignTxProps) => {
       nonce: realNonce || tx.nonce,
       gas: gasLimit,
       isSend,
+      isLocalSupportChain: isLocalSupportChainRef.current,
       traceId: securityCheckDetail?.trace_id,
       signingTxId: approval.signingTxId,
     });
@@ -1360,7 +1366,7 @@ const SignTx = ({ params, origin }: SignTxProps) => {
     chain: Chain,
     custom?: number
   ): Promise<GasLevel[]> => {
-    const list = await wallet.openapi.gasMarket(
+    const list = await wallet.gasMarket(
       chain.serverId,
       custom && custom > 0 ? custom : undefined
     );
