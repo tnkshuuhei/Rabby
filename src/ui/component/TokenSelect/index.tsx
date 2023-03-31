@@ -112,7 +112,7 @@ const TokenSelect = ({
 
     const getDefaultTokens = isSwapType
       ? wallet.openapi.getSwapTokenList
-      : wallet.openapi.listToken;
+      : wallet.listToken;
 
     const currentAddress = currentAccount?.address || '';
     const defaultTokens = await getDefaultTokens(currentAddress, chainId);
@@ -125,7 +125,7 @@ const TokenSelect = ({
           return chain === chainId;
         }) || [];
       if (localAdded.length > 0) {
-        localAddedTokens = await wallet.openapi.customListToken(
+        localAddedTokens = await wallet.customListToken(
           localAdded,
           currentAddress
         );
@@ -153,7 +153,7 @@ const TokenSelect = ({
     if (kw.length === 42 && kw.toLowerCase().startsWith('0x')) {
       const currentAccount = await wallet.syncGetCurrentAccount();
 
-      const data = await wallet.openapi.searchToken(currentAccount!.address, q);
+      const data = await wallet.searchToken(currentAccount!.address, q);
       return data.filter((e) => e.chain === chainId);
     }
     if (isSwapType) {

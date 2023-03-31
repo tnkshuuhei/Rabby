@@ -5,6 +5,7 @@ import * as bip39 from 'bip39';
 import { ethers, Contract } from 'ethers';
 import { groupBy } from 'lodash';
 import abiCoder, { AbiCoder } from 'web3-eth-abi';
+import { hexToString } from 'web3-utils';
 import * as optimismContracts from '@eth-optimism/contracts';
 import {
   keyringService,
@@ -2494,6 +2495,229 @@ export class WalletController extends BaseController {
   };
 
   getTx = getTx;
+
+  getERC20Token = async (addr: string, chainId: string, tokenId: string) => {
+    const chain = Object.values(CHAINS).find((i) => i.serverId === chainId);
+    if (!chain) throw `chainId ${chainId} not found`;
+    if (chain.nativeTokenAddress === tokenId) {
+      const balance = await requestRPC({
+        method: 'eth_getBalance',
+        params: [addr],
+        chainServerId: chainId,
+      });
+      return {
+        symbol: chain.nativeTokenSymbol,
+        logo: chain.nativeTokenLogo,
+        balance,
+        decimals: 18,
+      };
+    }
+    const decimalsCalldata = ((abiCoder as unknown) as AbiCoder).encodeFunctionCall(
+      {
+        constant: true,
+        inputs: [],
+        name: 'decimals',
+        outputs: [
+          {
+            name: '',
+            type: 'uint8',
+          },
+        ],
+        payable: false,
+        stateMutability: 'view',
+        type: 'function',
+      },
+      []
+    );
+    const symbolCalldata = ((abiCoder as unknown) as AbiCoder).encodeFunctionCall(
+      {
+        constant: true,
+        inputs: [],
+        name: 'symbol',
+        outputs: [
+          {
+            name: '',
+            type: 'string',
+          },
+        ],
+        payable: false,
+        stateMutability: 'view',
+        type: 'function',
+      },
+      []
+    );
+    const balanceCalldata = ((abiCoder as unknown) as AbiCoder).encodeFunctionCall(
+      {
+        constant: true,
+        inputs: [{ internalType: 'address', name: 'owner', type: 'address' }],
+        name: 'balanceOf',
+        outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+        payable: false,
+        stateMutability: 'view',
+        type: 'function',
+      },
+      [addr]
+    );
+    const [decimals, symbol, balance] = await Promise.all([
+      requestRPC({
+        method: 'eth_call',
+        params: [
+          {
+            to: tokenId,
+            data: decimalsCalldata,
+          },
+        ],
+        chainServerId: chainId,
+      }),
+      requestRPC({
+        method: 'eth_call',
+        params: [
+          {
+            to: tokenId,
+            data: symbolCalldata,
+          },
+        ],
+        chainServerId: chainId,
+      }),
+      requestRPC({
+        method: 'eth_call',
+        params: [
+          {
+            to: tokenId,
+            data: balanceCalldata,
+          },
+        ],
+        chainServerId: chainId,
+      }),
+    ]);
+    return {
+      decimals: Number(decimals),
+      symbol: hexToString(symbol),
+      balance,
+    };
+  };
+
+  getToken = async (id: string, chainId: string, tokenId: string) => {
+    const token = await openapiService.getToken(id, chainId, tokenId);
+    if (!token) {
+      const { decimals, symbol, balance, logo } = await this.getERC20Token(
+        id,
+        chainId,
+        tokenId
+      );
+      return {
+        amount: new BigNumber(balance).div(10 ** Number(decimals)).toNumber(),
+        chain: chainId,
+        decimals: Number(decimals),
+        display_symbol: symbol,
+        id: tokenId,
+        is_core: true,
+        is_verified: true,
+        is_wallet: true,
+        logo_url: logo || '',
+        name: symbol,
+        optimized_symbol: symbol,
+        price: 0,
+        symbol: symbol,
+        time_at: 0,
+        raw_amount: Number(balance),
+        raw_amount_hex_str: balance,
+      };
+    }
+    return token;
+  };
+
+  listToken = async (id: string, chainId?: string) => {
+    const list = await openapiService.listToken(id, chainId);
+    if (!list) return [];
+    return list;
+  };
+
+  searchToken = async (id: string, q: string, chainId?: string) => {
+    const list = await openapiService.searchToken(id, q, chainId);
+    if (!list) {
+      const { balance, decimals, logo, symbol } = await this.getERC20Token(
+        id,
+        CHAINS[CHAINS_ENUM.ZKSYNC].serverId,
+        q
+      );
+      return [
+        {
+          amount: new BigNumber(balance).div(10 ** Number(decimals)).toNumber(),
+          chain: CHAINS[CHAINS_ENUM.ZKSYNC].serverId,
+          decimals: Number(decimals),
+          display_symbol: symbol,
+          id: q,
+          is_core: false,
+          is_verified: false,
+          is_wallet: false,
+          logo_url: logo || '',
+          name: symbol,
+          optimized_symbol: symbol,
+          price: 0,
+          symbol: symbol,
+          time_at: 0,
+          raw_amount: Number(balance),
+          raw_amount_hex_str: balance as string,
+        },
+      ];
+    }
+    return list;
+  };
+
+  customListToken = async (uuids: string[], id: string) => {
+    let list = await openapiService.customListToken(uuids, id);
+    const notFoundList = uuids
+      .filter((str) => {
+        const [chainId, id] = str.split(':');
+        return !list.find(
+          (item) => item.chain === chainId && isSameAddress(item.id, id)
+        );
+      })
+      .map((s) => {
+        const [chainId, tokenId] = s.split(':');
+        return {
+          chainId,
+          tokenId,
+        };
+      });
+    if (notFoundList.length > 0) {
+      const notFoundTokens = await Promise.all(
+        notFoundList.map(async ({ chainId, tokenId }) => {
+          const token = await this.getERC20Token(id, chainId, tokenId);
+          return {
+            ...token,
+            chainId,
+            tokenId,
+          };
+        })
+      );
+      list = [
+        ...list,
+        ...notFoundTokens.map((t) => ({
+          amount: new BigNumber(t.balance)
+            .div(10 ** Number(t.decimals))
+            .toNumber(),
+          chain: t.chainId,
+          decimals: Number(t.decimals),
+          display_symbol: t.symbol,
+          id: t.tokenId,
+          is_core: false,
+          is_verified: false,
+          is_wallet: false,
+          logo_url: t.logo || '',
+          name: t.symbol,
+          optimized_symbol: t.symbol,
+          price: 0,
+          symbol: t.symbol,
+          time_at: 0,
+          raw_amount: Number(t.balance),
+          raw_amount_hex_str: t.balance as string,
+        })),
+      ];
+    }
+    return list;
+  };
 }
 
 export default new WalletController();

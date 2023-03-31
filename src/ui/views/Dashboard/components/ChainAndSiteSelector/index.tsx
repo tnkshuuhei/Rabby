@@ -126,7 +126,7 @@ export default ({
 
   const { value: tokenLogo, loading: tokenLoading } = useAsync(async () => {
     try {
-      const data = await wallet.openapi.getToken(
+      const data = await wallet.getToken(
         account!.address,
         CHAINS[currentConnectedSiteChain].serverId,
         CHAINS[currentConnectedSiteChain].nativeTokenAddress

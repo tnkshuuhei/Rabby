@@ -167,7 +167,7 @@ const Approve = ({
   };
 
   const fetchBalance = async () => {
-    const userToken: TokenItem = await wallet.openapi.getToken(
+    const userToken: TokenItem = await wallet.getToken(
       currentAccount?.address || '',
       detail.token.chain,
       detail.token.id

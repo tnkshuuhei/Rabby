@@ -231,7 +231,7 @@ export const SwapByDex = () => {
     loading: nativeTokenLoading,
   } = useAsync(async () => {
     if (chain) {
-      const t = await wallet.openapi.getToken(
+      const t = await wallet.getToken(
         userAddress,
         CHAINS[chain].serverId,
         CHAINS[chain].nativeTokenAddress
@@ -244,7 +244,7 @@ export const SwapByDex = () => {
 
   const { loading: payTokenLoading } = useAsync(async () => {
     if (payToken?.id && chain && payToken?.time_at === 0) {
-      const t = await wallet.openapi.getToken(
+      const t = await wallet.getToken(
         userAddress,
         CHAINS[chain].serverId,
         payToken?.id

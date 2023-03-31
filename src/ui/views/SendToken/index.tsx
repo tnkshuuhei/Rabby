@@ -574,8 +574,8 @@ const SendToken = () => {
     chainId: string,
     address: string
   ) => {
-    const t = await wallet.openapi.getToken(address, chainId, id);
-    if (!t) {
+    const t = await wallet.getToken(address, chainId, id);
+    if (t) {
       setCurrentToken(t);
       setIsLoading(false);
     } else {

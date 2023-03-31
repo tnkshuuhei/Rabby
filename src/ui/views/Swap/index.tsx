@@ -365,13 +365,13 @@ const Swap = () => {
     chainId: string,
     address: string
   ) => {
-    const t = await wallet.openapi.getToken(address, chainId, id);
+    const t = await wallet.getToken(address, chainId, id);
     setPayToken(t);
     setIsLoading(false);
   };
 
   const loadPayToken = async (id: string, chainId: string, address: string) => {
-    const t = await wallet.openapi.getToken(address, chainId, id);
+    const t = await wallet.getToken(address, chainId, id);
     setReceiveToken(t);
   };
 

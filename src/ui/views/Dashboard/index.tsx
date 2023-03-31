@@ -16,6 +16,8 @@ import {
   KEYRING_TYPE_TEXT,
   WALLET_BRAND_CONTENT,
   EVENTS,
+  CHAINS_ENUM,
+  CHAINS,
 } from 'consts';
 import cloneDeep from 'lodash/cloneDeep';
 import uniqBy from 'lodash/uniqBy';
@@ -351,17 +353,21 @@ const Dashboard = () => {
     if (q) {
       if (q.length !== 42 || !q.startsWith('0x')) return [];
       tokens = sortTokensByPrice(
-        await wallet.openapi.searchToken(currentAccount?.address || '', q)
+        await wallet.searchToken(
+          currentAccount?.address || '',
+          q,
+          CHAINS[CHAINS_ENUM.ZKSYNC].serverId
+        )
       );
       setSearchTokens(tokens);
     } else {
       setIsListLoading(true);
-      const defaultTokens = await wallet.openapi.listToken(
+      const defaultTokens = await wallet.listToken(
         currentAccount?.address || ''
       );
       const localAdded =
         (await wallet.getAddedToken(currentAccount?.address || '')) || [];
-      const localAddedTokens = await wallet.openapi.customListToken(
+      const localAddedTokens = await wallet.customListToken(
         localAdded,
         currentAccount?.address || ''
       );

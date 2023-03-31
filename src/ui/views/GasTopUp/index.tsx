@@ -45,7 +45,7 @@ export const GasTopUp = () => {
     const account = await wallet.getCurrentAccount();
     const chainId = CHAINS[chain].serverId;
     const tokenId = CHAINS[chain].nativeTokenAddress;
-    return await wallet.openapi.getToken(account!.address, chainId, tokenId);
+    return await wallet.getToken(account!.address, chainId, tokenId);
   }, [chain]);
 
   const {
@@ -82,7 +82,7 @@ export const GasTopUp = () => {
     retry,
   } = useAsyncRetry(async () => {
     const account = await wallet.getCurrentAccount();
-    const tokens = await wallet.openapi.listToken(account!.address);
+    const tokens = await wallet.listToken(account!.address);
     const sortedTokens = tokens.sort((a, b) =>
       new BigNumber(b.amount)
         .times(new BigNumber(b.price || 0))
