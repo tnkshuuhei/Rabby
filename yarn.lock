@@ -1329,15 +1329,10 @@
   resolved "https://registry.yarnpkg.com/@ctrl/tinycolor/-/tinycolor-3.4.0.tgz#c3c5ae543c897caa9c2a68630bed355be5f9990f"
   integrity sha512-JZButFdZ1+/xAfpguQHoabIXkcqRRKpMrWKBkpEZZyxfY9C1DpADFB8PEqGSTeFr135SaTRfKqGKx5xSCLI7ZQ==
 
-"@debank/common@^0.2.20":
-  version "0.2.22"
-  resolved "https://registry.yarnpkg.com/@debank/common/-/common-0.2.22.tgz#4c193829cd8d626df2b3cf21f47180e32cde162a"
-  integrity sha512-EBXBlfUxPoYRWIhWuaDoICgTijEdICk3v0+zNDu2WZCXILYrLuGqTjc0NxtbfONjtkQRB3yD8KQu8PGaRbju4g==
-
-"@debank/common@^0.2.26":
-  version "0.2.26"
-  resolved "https://registry.yarnpkg.com/@debank/common/-/common-0.2.26.tgz#6f05bc94f9f2403f0a7c95cd0ab105ef4efa3de7"
-  integrity sha512-3RMA2rY+XkwKJbrjxeRAHBvAfFHErXO772IONMiiRvTGqsOHjKWb7JYKvqrgI3BxeV2BkMjptGW5UskQBcpt3A==
+"@debank/common@0.3.0-beta":
+  version "0.3.0-beta"
+  resolved "https://registry.yarnpkg.com/@debank/common/-/common-0.3.0-beta.tgz#336f4e315fdd1665932a9b4b4e724b4eebfda594"
+  integrity sha512-JSW4+H/KLB2teESnfeDZJM+L3n05l4kXDY1Ub5iPVaHVq5k1ARhJPbc4wIb00dUUMnL+sjGbNljcvAJ8sNltbg==
 
 "@debank/festats@1.0.0":
   version "1.0.0"
@@ -3564,12 +3559,12 @@
     sinon-chrome "^3.0.1"
     webextension-polyfill-ts "^0.26.0"
 
-"@rabby-wallet/rabby-swap@^0.0.9":
-  version "0.0.9"
-  resolved "https://registry.yarnpkg.com/@rabby-wallet/rabby-swap/-/rabby-swap-0.0.9.tgz#cca980189f47de50c448ad51cc95cfbe7f41c241"
-  integrity sha512-KTTyGkySHpTBAkR1JZX3J9BQycXl++1dyHvNjhQE3Zkz6fWG5n/PQq8kCmOjvF3q5h28g8DCaygluuNAHQnCsg==
+"@rabby-wallet/rabby-swap@0.1.0-beta":
+  version "0.1.0-beta"
+  resolved "https://registry.yarnpkg.com/@rabby-wallet/rabby-swap/-/rabby-swap-0.1.0-beta.tgz#f8b850fb86be345224bc76d6776d650ade16e7a4"
+  integrity sha512-P6CCATlV2ZLIyUaRsAq0IoGW+8sewNighNNVc28vLmgeUSzjvK+sNxuzLcShBz9J78J7yRYl47zc14TnWXLIXg==
   dependencies:
-    "@debank/common" "^0.2.20"
+    "@debank/common" "0.3.0-beta"
     "@ethersproject/abi" "^5.7.0"
     axios "^0.27.2"
     web3-eth-abi "^1.8.1"
