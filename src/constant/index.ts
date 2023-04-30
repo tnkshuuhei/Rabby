@@ -53,6 +53,10 @@ import IconWarning from 'ui/assets/sign/security-engine/warning.svg';
 import IconError from 'ui/assets/sign/security-engine/error.svg';
 import IconProceed from 'ui/assets/sign/security-engine/processed.svg';
 import IconClosed from 'ui/assets/sign/security-engine/closed.svg';
+import LogoWalletConnect from 'ui/assets/walletlogo/walletconnect.svg';
+import LogoWalletConnectWhite from 'ui/assets/walletlogo/walletconnect.svg';
+import LogoCoinbase from 'ui/assets/walletlogo/coinbase.svg';
+import LogoCoinbaseWhite from 'ui/assets/walletlogo/coinbase.svg';
 
 export { CHAINS, CHAINS_ENUM };
 
@@ -288,6 +292,7 @@ export const EVENTS = {
   SIGN_FINISHED: 'SIGN_FINISHED',
   WALLETCONNECT: {
     STATUS_CHANGED: 'WALLETCONNECT_STATUS_CHANGED',
+    SESSION_STATUS_CHANGED: 'SESSION_STATUS_CHANGED',
     INIT: 'WALLETCONNECT_INIT',
     INITED: 'WALLETCONNECT_INITED',
     TRANSPORT_ERROR: 'TRANSPORT_ERROR',
@@ -324,7 +329,9 @@ export enum WALLET_BRAND_TYPES {
   KEYSTONE = 'Keystone',
   COOLWALLET = 'CoolWallet',
   DEFIANT = 'Defiant',
+  WALLETCONNECT = 'WALLETCONNECT',
   AIRGAP = 'AirGap',
+  COINBASE = 'Coinbase',
 }
 
 enum WALLET_BRAND_CATEGORY {
@@ -341,6 +348,7 @@ export type IWalletBrandContent = {
   image: string;
   connectType: BRAND_WALLET_CONNECT_TYPE;
   category: WALLET_BRAND_CATEGORY;
+  hidden?: boolean;
 };
 
 export const WALLET_BRAND_CONTENT: {
@@ -388,6 +396,16 @@ export const WALLET_BRAND_CONTENT: {
     brand: WALLET_BRAND_TYPES.DEFIANT,
     icon: LogoDefiant,
     image: LogoDefiantWhite,
+    connectType: BRAND_WALLET_CONNECT_TYPE.WalletConnect,
+    category: WALLET_BRAND_CATEGORY.MOBILE,
+    hidden: true,
+  },
+  [WALLET_BRAND_TYPES.WALLETCONNECT]: {
+    id: 20,
+    name: 'Wallet Connect',
+    brand: WALLET_BRAND_TYPES.WALLETCONNECT,
+    icon: LogoWalletConnect,
+    image: LogoWalletConnectWhite,
     connectType: BRAND_WALLET_CONNECT_TYPE.WalletConnect,
     category: WALLET_BRAND_CATEGORY.MOBILE,
   },
@@ -516,6 +534,16 @@ export const WALLET_BRAND_CONTENT: {
     image: LogoTrust,
     connectType: BRAND_WALLET_CONNECT_TYPE.WalletConnect,
     category: WALLET_BRAND_CATEGORY.MOBILE,
+  },
+  [WALLET_BRAND_TYPES.COINBASE]: {
+    id: 21,
+    name: 'Coinbase Wallet',
+    brand: WALLET_BRAND_TYPES.COINBASE,
+    icon: LogoCoinbase,
+    image: LogoCoinbaseWhite,
+    connectType: BRAND_WALLET_CONNECT_TYPE.WalletConnect,
+    category: WALLET_BRAND_CATEGORY.MOBILE,
+    hidden: true,
   },
 };
 

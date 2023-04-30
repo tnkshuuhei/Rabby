@@ -1312,6 +1312,24 @@ export class WalletController extends BaseController {
     return null;
   };
 
+  resendWalletConnect = () => {
+    const keyringType = KEYRING_CLASS.WALLETCONNECT;
+    const keyring: WalletConnectKeyring = this._getKeyringByType(keyringType);
+    if (keyring) {
+      return keyring.resend();
+    }
+    return null;
+  };
+
+  getWalletConnectSessionStatus = (address: string, brandName: string) => {
+    const keyringType = KEYRING_CLASS.WALLETCONNECT;
+    const keyring: WalletConnectKeyring = this._getKeyringByType(keyringType);
+    if (keyring) {
+      return keyring.getSessionStatus(address, brandName);
+    }
+    return null;
+  };
+
   initWalletConnect = async (brandName: string, bridge?: string) => {
     let keyring: WalletConnectKeyring, isNewKey;
     const keyringType = KEYRING_CLASS.WALLETCONNECT;
@@ -1363,6 +1381,13 @@ export class WalletController extends BaseController {
           setPageStateCacheWhenPopupClose(data);
         }
       });
+
+      keyring.on('sessionStatusChange', (data) => {
+        eventBus.emit(EVENTS.broadcastToUI, {
+          method: EVENTS.WALLETCONNECT.SESSION_STATUS_CHANGED,
+          params: data,
+        });
+      });
     }
     return {
       uri,
@@ -1404,7 +1429,11 @@ export class WalletController extends BaseController {
     return [];
   };
 
-  killWalletConnectConnector = async (address: string, brandName: string) => {
+  killWalletConnectConnector = async (
+    address: string,
+    brandName: string,
+    resetConnect: boolean
+  ) => {
     const keyringType = KEYRING_CLASS.WALLETCONNECT;
     const keyring: WalletConnectKeyring = this._getKeyringByType(keyringType);
     if (keyring) {
@@ -1412,15 +1441,28 @@ export class WalletController extends BaseController {
         keyring.connectors[`${brandName}-${address.toLowerCase()}`];
       if (connector) {
         await keyring.closeConnector(connector.connector, address, brandName);
+        // reset onAfterConnect
+        if (resetConnect) keyring.onAfterConnect = null;
       }
     }
+  };
+
+  getCommonWalletConnectInfo = (address: string) => {
+    const keyringType = KEYRING_CLASS.WALLETCONNECT;
+    const keyring: WalletConnectKeyring = this._getKeyringByType(keyringType);
+    if (keyring) {
+      return keyring.getCommonWalletConnectInfo(address);
+    }
+    return;
   };
 
   importWalletConnect = async (
     address: string,
     brandName: string,
     bridge?: string,
-    stashId?: number
+    stashId?: number,
+    realBrandName?: string,
+    realBrandUrl?: string
   ) => {
     let keyring: WalletConnectKeyring, isNewKey;
     const keyringType = KEYRING_CLASS.WALLETCONNECT;
@@ -1443,6 +1485,8 @@ export class WalletController extends BaseController {
       address,
       brandName,
       bridge,
+      realBrandName,
+      realBrandUrl,
     });
 
     if (isNewKey) {

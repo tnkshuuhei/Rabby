@@ -19,6 +19,7 @@ import {
   WALLET_BRAND_CONTENT,
   BRAND_WALLET_CONNECT_TYPE,
   WALLET_BRAND_TYPES,
+  IWalletBrandContent,
 } from 'consts';
 
 import clsx from 'clsx';
@@ -31,10 +32,10 @@ const walletSortObj = [
   //mobile
   WALLET_BRAND_TYPES.METAMASK,
   WALLET_BRAND_TYPES.TRUSTWALLET,
-  WALLET_BRAND_TYPES.IMTOKEN,
   WALLET_BRAND_TYPES.TP,
+  WALLET_BRAND_TYPES.IMTOKEN,
   WALLET_BRAND_TYPES.MATHWALLET,
-  WALLET_BRAND_TYPES.DEFIANT,
+  WALLET_BRAND_TYPES.WALLETCONNECT,
   //hard wallet
   WALLET_BRAND_TYPES.LEDGER,
   WALLET_BRAND_TYPES.TREZOR,
@@ -117,8 +118,9 @@ const AddAddressOptions = () => {
     handleRouter((h) => connectRouter1(h, item));
   const brandWallet = React.useMemo(
     () =>
-      Object.values(WALLET_BRAND_CONTENT)
+      (Object.values(WALLET_BRAND_CONTENT)
         .map((item) => {
+          if (item.hidden) return;
           return {
             leftIcon: item.image,
             content: t(item.name),
@@ -129,8 +131,9 @@ const AddAddressOptions = () => {
             category: item.category,
           };
         })
-        .filter(Boolean)
-        .sort((a, b) => getSortNum(a.brand) - getSortNum(b.brand)),
+        .filter(Boolean) as any).sort(
+        (a, b) => getSortNum(a.brand) - getSortNum(b.brand)
+      ),
     [t, connectRouter]
   );
 
@@ -290,12 +293,13 @@ const AddAddressOptions = () => {
                               src={v.image}
                               className="w-[28px] h-[28px] rounded-full"
                             />
-                            {v.connectType === 'WalletConnect' && (
-                              <img
-                                src={IconWalletConnect}
-                                className="absolute -top-6 -right-6 w-[14px] h-[14px] rounded-full"
-                              />
-                            )}
+                            {v.connectType === 'WalletConnect' &&
+                              v.brand !== WALLET_BRAND_TYPES.WALLETCONNECT && (
+                                <img
+                                  src={IconWalletConnect}
+                                  className="absolute -bottom-6 -right-6 w-[14px] h-[14px] rounded-full"
+                                />
+                              )}
                           </div>
                         }
                         rightIcon={null}

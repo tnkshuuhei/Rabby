@@ -7,10 +7,15 @@ import { useWallet, useWalletRequest } from 'ui/utils';
 import IconBack from 'ui/assets/icon-back.svg';
 import { ScanCopyQRCode } from 'ui/component';
 import eventBus from '@/eventBus';
-import { WALLETCONNECT_STATUS_MAP, EVENTS } from 'consts';
+import { WALLETCONNECT_STATUS_MAP, EVENTS, WALLET_BRAND_CONTENT } from 'consts';
 import Mask from 'ui/assets/import-mask.png';
 import './style.less';
 import clsx from 'clsx';
+import IconWalletConnect from 'ui/assets/walletlogo/walletconnect.svg';
+import { useStatus } from '@/ui/component/WalletConnect/useStatus';
+
+const WalletConnectName = WALLET_BRAND_CONTENT['WALLETCONNECT']?.name;
+
 const WalletConnectTemplate = () => {
   const { t } = useTranslation();
   const history = useHistory();
@@ -22,6 +27,8 @@ const WalletConnectTemplate = () => {
   const [bridgeURL, setBridgeURL] = useState(DEFAULT_BRIDGE);
   const [brand, setBrand] = useState(location.state?.brand || {});
   const [ready, setReady] = useState(false);
+  const sessionStatus = useStatus();
+  const [runParams, setRunParams] = useState<Parameters<typeof run>>();
 
   const [run, loading] = useWalletRequest(wallet.importWalletConnect, {
     onSuccess(accounts) {
@@ -32,7 +39,7 @@ const WalletConnectTemplate = () => {
           brand: brand.brand,
           image: brand.image,
           editing: true,
-          title: t('Imported Successfully'),
+          title: 'Connected successfully',
           importedAccount: true,
         },
       });
@@ -43,6 +50,20 @@ const WalletConnectTemplate = () => {
       return;
     },
   });
+
+  const handleRun = async (options: Parameters<typeof run>) => {
+    const [payload, brandName] = options;
+    const { account, peerMeta } = payload as any;
+
+    options[0] = account;
+    if (brandName === WALLET_BRAND_CONTENT['WALLETCONNECT'].brand) {
+      if (peerMeta?.name) {
+        options[4] = peerMeta.name;
+        options[5] = peerMeta.icons?.[0];
+      }
+    }
+    run(...options);
+  };
 
   const handleImportByWalletconnect = async () => {
     const { uri, stashId } = await wallet.initWalletConnect(
@@ -66,13 +87,13 @@ const WalletConnectTemplate = () => {
       ({ status, payload }) => {
         switch (status) {
           case WALLETCONNECT_STATUS_MAP.CONNECTED:
-            setResult(payload);
-            run(
+            setResult(payload.account);
+            setRunParams([
               payload,
               brand.brand,
               bridgeURL,
-              stashId === null ? undefined : stashId
-            );
+              stashId === null ? undefined : stashId,
+            ]);
             break;
           case WALLETCONNECT_STATUS_MAP.FAILD:
           case WALLETCONNECT_STATUS_MAP.REJECTED:
@@ -85,6 +106,12 @@ const WalletConnectTemplate = () => {
       }
     );
   };
+
+  useEffect(() => {
+    if (sessionStatus === 'CONNECTED' && runParams?.length) {
+      handleRun(runParams);
+    }
+  }, [sessionStatus, runParams]);
 
   const handleClickBack = () => {
     if (history.length > 1) {
@@ -132,12 +159,12 @@ const WalletConnectTemplate = () => {
         setBrand(states.brand);
       }
       if (states.data) {
-        run(
+        setRunParams([
           states.data.payload,
           states.brand.brand,
           states.bridgeURL,
-          states.stashId
-        );
+          states.stashId,
+        ]);
       }
       if (states.bridgeURL && states.bridgeURL !== bridgeURL) {
         setBridgeURL(states.bridgeURL);
@@ -155,23 +182,31 @@ const WalletConnectTemplate = () => {
     };
   }, []);
 
+  const brandName = brand.name === WalletConnectName ? 'Mobile' : brand.name;
+
   return (
     <div className="wallet-connect pb-0">
-      <div className="create-new-header create-password-header h-[220px] pt-[16px] pb-[30px]">
+      <div className="create-new-header create-password-header h-[180px] py-[20px]">
         <img
           src={IconBack}
           className="icon-back mb-0 relative z-10"
           onClick={handleClickBack}
         />
-        <img
-          className="unlock-logo w-[80px] h-[80px] mb-16 mx-auto"
-          src={brand.image}
-        />
-        <p className="text-24 mb-8 mt-0 text-white text-center font-bold">
-          {t(brand.name)}
+        <div className="relative w-[60px] h-[60px] mb-16 mx-auto mt-[-4px]">
+          <img className="unlock-logo w-full h-full" src={brand.image} />
+          <img
+            className={clsx(
+              'w-[24px] h-[24px] absolute bottom-[-4px] right-[-8px]',
+              { hidden: brand.name === WalletConnectName }
+            )}
+            src={IconWalletConnect}
+          />
+        </div>
+        <p className="text-[17px] leading-none mb-8 mt-0 text-white text-center font-bold">
+          Connect your {brandName} Wallet
         </p>
-        <p className="text-15 mb-0 mt-4 text-white font-medium text-center">
-          {t('Scan with your wallet app')}
+        <p className="text-13 leading-none mb-0 text-white font-medium text-center">
+          {'via Wallet Connect'}
         </p>
         <img src={Mask} className="mask" />
       </div>
@@ -183,6 +218,8 @@ const WalletConnectTemplate = () => {
         bridgeURL={bridgeURL}
         onBridgeChange={handleBridgeChange}
         defaultBridge={DEFAULT_BRIDGE}
+        canChangeBridge={false}
+        brandName={brandName}
       />
     </div>
   );
