@@ -1,15 +1,19 @@
 import { KEYRING_CLASS } from '@/constant';
 import React from 'react';
-import { ProcessActions, Props as ProcessActionsProps } from './ProcessActions';
+import { ProcessActions } from './ProcessActions';
+import { SubmitActions } from './SubmitActions';
+export { Props } from './ActionsContainer';
+import { Props } from './ActionsContainer';
 
-export type Props = ProcessActionsProps;
-
-export const ActionGroup: React.FC<ProcessActionsProps> = (props) => {
+export const ActionGroup: React.FC<Props> = (props) => {
   const { account } = props;
   return (
     <div>
       {account.type === KEYRING_CLASS.WALLETCONNECT && (
         <ProcessActions {...props} />
+      )}
+      {account.type === KEYRING_CLASS.PRIVATE_KEY && (
+        <SubmitActions {...props} />
       )}
     </div>
   );

@@ -796,7 +796,6 @@ const SignTx = ({ params, origin }: SignTxProps) => {
   const [isLedger, setIsLedger] = useState(false);
   const [useLedgerLive, setUseLedgerLive] = useState(false);
   const hasConnectedLedgerHID = useLedgerDeviceConnected();
-  const [isWalletConnect, setIsWalletConnect] = useState(false);
 
   const gaEvent = async (type: 'allow' | 'cancel') => {
     const ga:
@@ -1454,7 +1453,6 @@ const SignTx = ({ params, origin }: SignTxProps) => {
       const is1559 =
         support1559 && SUPPORT_1559_KEYRING_TYPE.includes(currentAccount.type);
       setIsLedger(currentAccount?.type === KEYRING_CLASS.HARDWARE.LEDGER);
-      setIsWalletConnect(currentAccount?.type === KEYRING_CLASS.WALLETCONNECT);
       setUseLedgerLive(await wallet.isUseLedgerLive());
       setIsHardware(
         !!Object.values(HARDWARE_KEYRING_TYPES).find(
@@ -1641,12 +1639,9 @@ const SignTx = ({ params, origin }: SignTxProps) => {
   if (isLedger && !useLedgerLive && !hasConnectedLedgerHID) {
     approvalTxStyle.paddingBottom = '230px';
   }
-  if (isWalletConnect) {
-    approvalTxStyle.paddingBottom = '250px';
-  }
+  approvalTxStyle.paddingBottom = '250px';
   return (
     <>
-      {!isWalletConnect && <AccountCard />}
       <div
         className={clsx('approval-tx', {
           'pre-process-failed': !preprocessSuccess,
@@ -1740,99 +1735,34 @@ const SignTx = ({ params, origin }: SignTxProps) => {
                     <ProcessTooltip>{cantProcessReason}</ProcessTooltip>
                   )}
 
-                  {isWalletConnect ? (
-                    <FooterBar
-                      chain={chain}
-                      onCancel={handleCancel}
-                      onProcess={() => handleAllow(forceProcess)}
-                      enableTooltip={
-                        !canProcess ||
-                        !!checkErrors.find((item) => item.level === 'forbidden')
-                      }
-                      tooltipContent={
-                        checkErrors.find((item) => item.level === 'forbidden')
-                          ? checkErrors.find(
-                              (item) => item.level === 'forbidden'
-                            )!.msg
-                          : undefined
-                      }
-                      disabledProcess={
-                        !canProcess ||
-                        !!checkErrors.find(
-                          (item) => item.level === 'forbidden'
-                        ) ||
-                        !isReady ||
-                        (selectedGas ? selectedGas.price < 0 : true) ||
-                        (isGnosisAccount ? !safeInfo : false) ||
-                        (isLedger &&
-                          !useLedgerLive &&
-                          !hasConnectedLedgerHID) ||
-                        !forceProcess ||
-                        securityCheckStatus === 'loading'
-                      }
-                    />
-                  ) : (
-                    <div className="action-buttons flex justify-between relative">
-                      <Button
-                        type="primary"
-                        size="large"
-                        className="w-[172px]"
-                        onClick={handleCancel}
-                      >
-                        {t('Cancel')}
-                      </Button>
-                      {!canProcess ||
+                  <FooterBar
+                    chain={chain}
+                    onCancel={handleCancel}
+                    onSubmit={() => handleAllow(forceProcess)}
+                    enableTooltip={
+                      !canProcess ||
+                      !!checkErrors.find((item) => item.level === 'forbidden')
+                    }
+                    tooltipContent={
+                      checkErrors.find((item) => item.level === 'forbidden')
+                        ? checkErrors.find(
+                            (item) => item.level === 'forbidden'
+                          )!.msg
+                        : undefined
+                    }
+                    disabledProcess={
+                      !canProcess ||
                       !!checkErrors.find(
                         (item) => item.level === 'forbidden'
-                      ) ? (
-                        <Tooltip
-                          placement="topLeft"
-                          overlayClassName="rectangle sign-tx-forbidden-tooltip"
-                          title={
-                            checkErrors.find(
-                              (item) => item.level === 'forbidden'
-                            )
-                              ? checkErrors.find(
-                                  (item) => item.level === 'forbidden'
-                                )!.msg
-                              : null
-                          }
-                        >
-                          <div>
-                            <Button
-                              type="primary"
-                              size="large"
-                              className="w-[172px]"
-                              onClick={() => handleAllow()}
-                              disabled={true}
-                            >
-                              {t(submitText)}
-                            </Button>
-                          </div>
-                        </Tooltip>
-                      ) : (
-                        <Button
-                          type="primary"
-                          size="large"
-                          className="w-[172px]"
-                          onClick={() => handleAllow(forceProcess)}
-                          disabled={
-                            !isReady ||
-                            (selectedGas ? selectedGas.price < 0 : true) ||
-                            (isGnosisAccount ? !safeInfo : false) ||
-                            (isLedger &&
-                              !useLedgerLive &&
-                              !hasConnectedLedgerHID) ||
-                            !forceProcess ||
-                            securityCheckStatus === 'loading'
-                          }
-                          loading={isGnosisAccount ? !safeInfo : false}
-                        >
-                          {t(submitText)}
-                        </Button>
-                      )}
-                    </div>
-                  )}
+                      ) ||
+                      !isReady ||
+                      (selectedGas ? selectedGas.price < 0 : true) ||
+                      (isGnosisAccount ? !safeInfo : false) ||
+                      (isLedger && !useLedgerLive && !hasConnectedLedgerHID) ||
+                      !forceProcess ||
+                      securityCheckStatus === 'loading'
+                    }
+                  />
                 </>
               )}
             </footer>
