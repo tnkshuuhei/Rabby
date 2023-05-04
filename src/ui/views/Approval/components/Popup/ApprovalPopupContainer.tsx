@@ -2,21 +2,29 @@ import clsx from 'clsx';
 import React from 'react';
 import { FooterDoneButton } from './FooterDoneButton';
 import { FooterResend } from './FooterResend';
-import { FooterResendButton } from './FooterResendButton';
+import { FooterButton } from './FooterButton';
 import { FooterResendCancelGroup } from './FooterResendCancelGroup';
 
 import TXWaitingSVG from 'ui/assets/approval/tx-waiting.svg';
 import TXErrorSVG from 'ui/assets/approval/tx-error.svg';
 import TXSubmittedSVG from 'ui/assets/approval/tx-submitted.svg';
+import { noop } from '@/ui/utils';
 
 export interface Props {
   brandUrl: string;
-  status: 'SENDING' | 'WAITING' | 'RESOLVED' | 'REJECTED' | 'FAILED';
+  status:
+    | 'SENDING'
+    | 'WAITING'
+    | 'RESOLVED'
+    | 'REJECTED'
+    | 'FAILED'
+    | 'SUBMITTING';
   content: React.ReactNode;
   description?: React.ReactNode;
-  onRetry: () => void;
-  onDone: () => void;
-  onCancel: () => void;
+  onRetry?: () => void;
+  onDone?: () => void;
+  onCancel?: () => void;
+  onSubmit?: () => void;
   hasMoreDescription?: boolean;
 }
 
@@ -25,9 +33,10 @@ export const ApprovalPopupContainer: React.FC<Props> = ({
   status,
   content,
   description,
-  onRetry,
-  onDone,
-  onCancel,
+  onRetry = noop,
+  onDone = noop,
+  onCancel = noop,
+  onSubmit = noop,
   hasMoreDescription,
 }) => {
   const [image, setImage] = React.useState('');
@@ -42,6 +51,7 @@ export const ApprovalPopupContainer: React.FC<Props> = ({
         setContentColor('text-gray-title');
         break;
       case 'WAITING':
+      case 'SUBMITTING':
         setImage(TXWaitingSVG);
         setIconColor('bg-blue-light');
         setContentColor('text-gray-title');
@@ -113,10 +123,15 @@ export const ApprovalPopupContainer: React.FC<Props> = ({
       <div className="absolute bottom-[10px]">
         {status === 'SENDING' && <FooterResend onResend={onRetry} />}
         {status === 'WAITING' && <FooterResend onResend={onRetry} />}
-        {status === 'FAILED' && <FooterResendButton onResend={onRetry} />}
+        {status === 'FAILED' && (
+          <FooterButton text="Resend" onClick={onRetry} />
+        )}
         {status === 'RESOLVED' && <FooterDoneButton onDone={onDone} />}
         {status === 'REJECTED' && (
           <FooterResendCancelGroup onResend={onRetry} onCancel={onCancel} />
+        )}
+        {status === 'SUBMITTING' && (
+          <FooterButton text="Submit Transaction" onClick={onSubmit} />
         )}
       </div>
     </div>

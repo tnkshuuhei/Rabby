@@ -361,7 +361,7 @@ const SignTypedData = ({ params }: { params: SignTypedDataProps }) => {
       <div
         className="approval-text"
         style={{
-          paddingBottom: '250px',
+          paddingBottom: '210px',
         }}
       >
         <p className="section-title">

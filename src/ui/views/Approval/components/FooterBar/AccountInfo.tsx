@@ -1,5 +1,9 @@
 import { Account } from '@/background/service/preference';
-import { KEYRING_CLASS, WALLET_BRAND_CONTENT } from '@/constant';
+import {
+  KEYRING_CLASS,
+  WALLET_BRAND_CONTENT,
+  WALLET_BRAND_TYPES,
+} from '@/constant';
 import { AddressViewer } from '@/ui/component';
 import useCurrentBalance from '@/ui/hooks/useCurrentBalance';
 import { splitNumberByStep, useWallet } from '@/ui/utils';
@@ -65,6 +69,30 @@ export const AccountInfo: React.FC<Props> = ({ account, chain }) => {
         <CommonAccount
           icon={WALLET_BRAND_CONTENT.TREZOR.icon}
           tip="Import by Trezor"
+        />
+      )}
+      {account?.type === KEYRING_CLASS.HARDWARE.BITBOX02 && (
+        <CommonAccount
+          icon={WALLET_BRAND_CONTENT.BITBOX02.icon}
+          tip="Import by BitBox02"
+        />
+      )}
+      {account?.brandName === WALLET_BRAND_TYPES.KEYSTONE && (
+        <CommonAccount
+          icon={WALLET_BRAND_CONTENT.Keystone.icon}
+          tip="Import by Keystone"
+        />
+      )}
+      {account?.brandName === WALLET_BRAND_TYPES.AIRGAP && (
+        <CommonAccount
+          icon={WALLET_BRAND_CONTENT.AirGap.icon}
+          tip="Import by AirGap"
+        />
+      )}
+      {account?.brandName === WALLET_BRAND_TYPES.COOLWALLET && (
+        <CommonAccount
+          icon={WALLET_BRAND_CONTENT.CoolWallet.icon}
+          tip="Import by CoolWallet"
         />
       )}
     </div>

@@ -1639,7 +1639,7 @@ const SignTx = ({ params, origin }: SignTxProps) => {
   if (isLedger && !useLedgerLive && !hasConnectedLedgerHID) {
     approvalTxStyle.paddingBottom = '230px';
   }
-  approvalTxStyle.paddingBottom = '250px';
+  approvalTxStyle.paddingBottom = '210px';
   return (
     <>
       <div

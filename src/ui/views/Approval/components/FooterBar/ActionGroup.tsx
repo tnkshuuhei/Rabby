@@ -1,4 +1,4 @@
-import { KEYRING_CLASS } from '@/constant';
+import { KEYRING_CLASS, WALLET_BRAND_TYPES } from '@/constant';
 import React from 'react';
 import { ProcessActions } from './ProcessActions';
 import { SubmitActions } from './SubmitActions';
@@ -22,23 +22,13 @@ const WalletConnectProcessActions: React.FC<Props> = ({
 
 export const ActionGroup: React.FC<Props> = (props) => {
   const { account } = props;
-  return (
-    <div>
-      {account.type === KEYRING_CLASS.WALLETCONNECT && (
-        <WalletConnectProcessActions {...props} />
-      )}
-      {account.type === KEYRING_CLASS.HARDWARE.LEDGER && (
-        <ProcessActions {...props} />
-      )}
-      {account.type === KEYRING_CLASS.HARDWARE.ONEKEY && (
-        <ProcessActions {...props} />
-      )}
-      {account.type === KEYRING_CLASS.HARDWARE.TREZOR && (
-        <ProcessActions {...props} />
-      )}
-      {account.type === KEYRING_CLASS.PRIVATE_KEY && (
-        <SubmitActions {...props} />
-      )}
-    </div>
-  );
+
+  if (account.type === KEYRING_CLASS.PRIVATE_KEY) {
+    return <SubmitActions {...props} />;
+  }
+  if (account.type === KEYRING_CLASS.WALLETCONNECT) {
+    return <WalletConnectProcessActions {...props} />;
+  }
+
+  return <ProcessActions {...props} />;
 };
