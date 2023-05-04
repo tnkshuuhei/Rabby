@@ -7,6 +7,7 @@ import clsx from 'clsx';
 import React from 'react';
 import { WalletConnectAccount } from './WalletConnectAccount';
 import { Chain } from '@debank/common';
+import { LedgerAccount } from './LedgerAccount';
 
 export interface Props {
   account: Account;
@@ -52,6 +53,7 @@ export const AccountInfo: React.FC<Props> = ({ account, chain }) => {
       {account?.type === KEYRING_CLASS.WALLETCONNECT && (
         <WalletConnectAccount chain={chain} account={account} />
       )}
+      {account?.type === KEYRING_CLASS.HARDWARE.LEDGER && <LedgerAccount />}
     </div>
   );
 };

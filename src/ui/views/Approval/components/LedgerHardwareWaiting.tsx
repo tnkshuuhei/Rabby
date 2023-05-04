@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Button, message } from 'antd';
+import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { matomoRequestEvent } from '@/utils/matomo-request';
 import { Account } from 'background/service/preference';
@@ -15,11 +15,15 @@ import {
   openInTab,
   openInternalPageInTab,
   useWallet,
+  useCommonPopupView,
 } from 'ui/utils';
 import eventBus from '@/eventBus';
 import stats from '@/stats';
-import { SvgIconOpenExternal } from 'ui/assets';
-import { LedgerHardwareFailed } from './LedgerHardwareFailed';
+import LedgerSVG from 'ui/assets/walletlogo/ledger.svg';
+import {
+  ApprovalPopupContainer,
+  Props as ApprovalPopupContainerProps,
+} from './Popup/ApprovalPopupContainer';
 
 interface ApprovalParams {
   address: string;
@@ -32,6 +36,12 @@ interface ApprovalParams {
 }
 
 const LedgerHardwareWaiting = ({ params }: { params: ApprovalParams }) => {
+  const { setTitle } = useCommonPopupView();
+  const [statusProp, setStatusProp] = React.useState<
+    ApprovalPopupContainerProps['status']
+  >('SENDING');
+  const [content, setContent] = React.useState('');
+  const [description, setDescription] = React.useState('');
   const wallet = useWallet();
   const statusHeaders = {
     [WALLETCONNECT_STATUS_MAP.WAITING]: {
@@ -148,7 +158,7 @@ const LedgerHardwareWaiting = ({ params }: { params: ApprovalParams }) => {
     });
     eventBus.addEventListener(EVENTS.SIGN_FINISHED, async (data) => {
       if (data.success) {
-        // setConnectStatus(WALLETCONNECT_STATUS_MAP.SIBMITTED);
+        setConnectStatus(WALLETCONNECT_STATUS_MAP.SIBMITTED);
         setResult(data.data);
         if (params.isGnosis) {
           const sigs = await wallet.getGnosisTransactionSignatures();
@@ -177,105 +187,63 @@ const LedgerHardwareWaiting = ({ params }: { params: ApprovalParams }) => {
   };
 
   useEffect(() => {
+    setTitle('Sign with Ledger');
     init();
   }, []);
-  const currentHeader = statusHeaders[connectStatus];
 
-  if (connectStatus === WALLETCONNECT_STATUS_MAP.FAILD) {
-    return (
-      <LedgerHardwareFailed
-        header={currentHeader}
-        errorMessage={errorMessage}
-        isSignText={isSignText}
-      >
-        <div className="ledger-waiting__footer">
-          <Button
-            className="w-[200px]"
-            type="primary"
-            size="large"
-            onClick={handleRetry}
-          >
-            Retry
-          </Button>
-          <Button type="link" onClick={handleCancel}>
-            {t('Cancel')}
-          </Button>
-        </div>
-      </LedgerHardwareFailed>
-    );
-  }
+  useEffect(() => {
+    switch (connectStatus) {
+      case WALLETCONNECT_STATUS_MAP.WAITING:
+        setStatusProp('WAITING');
+        setContent('Sending signing request...');
+        setDescription('');
+        break;
+      case WALLETCONNECT_STATUS_MAP.FAILD:
+        setStatusProp('REJECTED');
+        setContent('Transaction rejected');
+        setDescription(errorMessage);
+        break;
+      case WALLETCONNECT_STATUS_MAP.SIBMITTED:
+        setStatusProp('RESOLVED');
+        setContent('Transaction submitted');
+        setDescription('');
+        break;
+      default:
+        break;
+    }
+  }, [connectStatus, errorMessage]);
 
   return (
-    <div className="ledger-waiting">
-      <img
-        src="/images/ledger-status/header.png"
-        className="ledger-waiting__nav"
-      />
-      <div className="ledger-waiting__container">
-        <div className="ledger-waiting__header">
-          <h1
-            style={{
-              color: currentHeader.color,
-              marginBottom: `${currentHeader.desc ? '8px' : '70px'}`,
-            }}
-          >
-            {isSignText ? currentHeader.signTextContent : currentHeader.content}
-          </h1>
-          {currentHeader.desc && !isSignText && <p>{currentHeader.desc}</p>}
-        </div>
-        <img src={currentHeader.image} className="ledger-waiting__status" />
-        {connectStatus === WALLETCONNECT_STATUS_MAP.WAITING && (
-          <div className="ledger-waiting__tip">
-            <p>Make sure:</p>
-            <p>1. Plug your Ledger wallet into your computer</p>
-            <p>2. Unlock Ledger and open the Ethereum app</p>
-            <p className="ledger-waiting__tip-resend">
-              Don't see the transaction on Ledger?{' '}
-              <span className="underline cursor-pointer" onClick={handleRetry}>
-                Resend transaction
-              </span>
-            </p>
-          </div>
-        )}
-        {connectStatus === WALLETCONNECT_STATUS_MAP.SIBMITTED && !isSignText && (
-          <div className="ledger-waiting__result">
-            <img className="icon icon-chain" src={chain.logo} />
+    <ApprovalPopupContainer
+      brandUrl={LedgerSVG}
+      status={statusProp}
+      onRetry={handleRetry}
+      onDone={handleOK}
+      onCancel={handleCancel}
+      description={
+        <>
+          {description}
+          {description.includes('EthAppPleaseEnableContractData') && (
             <a
-              href="javascript:;"
-              className="tx-hash"
-              onClick={handleClickResult}
+              className="underline text-blue-light block text-center mt-8"
+              href="https://support.ledger.com/hc/en-us/articles/4405481324433-Enable-blind-signing-in-the-Ethereum-ETH-app?docs=true"
+              onClick={(e) => {
+                e.preventDefault();
+                window.open(
+                  e.currentTarget.href,
+                  '_blank',
+                  'noopener,noreferrer'
+                );
+              }}
             >
-              {`${result.slice(0, 6)}...${result.slice(-4)}`}
-              <SvgIconOpenExternal className="icon icon-external" />
+              Blind Signature Tutorial from Ledger
             </a>
-          </div>
-        )}
-        {(connectStatus === WALLETCONNECT_STATUS_MAP.SIBMITTED ||
-          connectStatus === WALLETCONNECT_STATUS_MAP.FAILD) && (
-          <div
-            className="ledger-waiting__footer"
-            style={{
-              marginTop: `${
-                connectStatus === WALLETCONNECT_STATUS_MAP.SIBMITTED
-                  ? '55px'
-                  : '120px'
-              }`,
-            }}
-          >
-            {connectStatus === WALLETCONNECT_STATUS_MAP.SIBMITTED && (
-              <Button
-                className="w-[200px]"
-                type="primary"
-                size="large"
-                onClick={handleOK}
-              >
-                OK
-              </Button>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
+          )}
+        </>
+      }
+      content={content}
+      hasMoreDescription={statusProp === 'REJECTED'}
+    />
   );
 };
 

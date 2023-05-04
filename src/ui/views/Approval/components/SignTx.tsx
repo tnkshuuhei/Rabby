@@ -1722,7 +1722,7 @@ const SignTx = ({ params, origin }: SignTxProps) => {
             <footer className="connect-footer pb-[20px]">
               {txDetail && (
                 <>
-                  {isLedger && !useLedgerLive && !hasConnectedLedgerHID && (
+                  {/* {isLedger && !useLedgerLive && !hasConnectedLedgerHID && (
                     <LedgerWebHIDAlert connected={hasConnectedLedgerHID} />
                   )}
                   {canProcess ? (
@@ -1733,7 +1733,7 @@ const SignTx = ({ params, origin }: SignTxProps) => {
                     />
                   ) : (
                     <ProcessTooltip>{cantProcessReason}</ProcessTooltip>
-                  )}
+                  )} */}
 
                   <FooterBar
                     chain={chain}
@@ -1751,10 +1751,6 @@ const SignTx = ({ params, origin }: SignTxProps) => {
                         : undefined
                     }
                     disabledProcess={
-                      !canProcess ||
-                      !!checkErrors.find(
-                        (item) => item.level === 'forbidden'
-                      ) ||
                       !isReady ||
                       (selectedGas ? selectedGas.price < 0 : true) ||
                       (isGnosisAccount ? !safeInfo : false) ||

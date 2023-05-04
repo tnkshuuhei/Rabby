@@ -438,7 +438,7 @@ const SignTypedData = ({ params }: { params: SignTypedDataProps }) => {
       </div>
 
       <footer className="approval-text__footer">
-        {isLedger && !useLedgerLive && !hasConnectedLedgerHID && (
+        {/* {isLedger && !useLedgerLive && !hasConnectedLedgerHID && (
           <LedgerWebHIDAlert connected={hasConnectedLedgerHID} />
         )}
         {isWatch ? (
@@ -449,7 +449,7 @@ const SignTypedData = ({ params }: { params: SignTypedDataProps }) => {
             value={forceProcess}
             onChange={handleForceProcessChange}
           />
-        )}
+        )} */}
 
         <FooterBar
           chain={chain}

@@ -391,7 +391,7 @@ const SignText = ({ params }: { params: SignTextProps }) => {
       </div>
 
       <footer className="approval-text__footer pb-[20px]">
-        {isLedger && !useLedgerLive && !hasConnectedLedgerHID && (
+        {/* {isLedger && !useLedgerLive && !hasConnectedLedgerHID && (
           <LedgerWebHIDAlert connected={hasConnectedLedgerHID} />
         )}
         {isWatch ? (
@@ -402,7 +402,7 @@ const SignText = ({ params }: { params: SignTextProps }) => {
             value={forceProcess}
             onChange={handleForceProcessChange}
           />
-        )}
+        )} */}
 
         <FooterBar
           onCancel={handleCancel}

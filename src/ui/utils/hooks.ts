@@ -11,7 +11,7 @@ import { useApprovalPopup } from './approval-popup';
 export const useApproval = () => {
   const wallet = useWallet();
   const history = useHistory();
-  const { showPopup, enablePopup } = useApprovalPopup();
+  const { showPopup } = useApprovalPopup();
 
   const getApproval: () => Promise<Approval> = wallet.getApproval;
 
@@ -30,11 +30,7 @@ export const useApproval = () => {
       return;
     }
     setTimeout(() => {
-      if (enablePopup(data.type)) {
-        showPopup();
-        return;
-      }
-      history.replace('/');
+      showPopup();
     });
   };
 
