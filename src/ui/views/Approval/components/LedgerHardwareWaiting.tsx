@@ -43,27 +43,7 @@ const LedgerHardwareWaiting = ({ params }: { params: ApprovalParams }) => {
   const [content, setContent] = React.useState('');
   const [description, setDescription] = React.useState('');
   const wallet = useWallet();
-  const statusHeaders = {
-    [WALLETCONNECT_STATUS_MAP.WAITING]: {
-      color: '#8697FF',
-      content: 'Please Sign on Your Ledger',
-      signTextContent: 'Please Sign on Your Ledger',
-      image: '/images/ledger-status/plug.jpg',
-    },
-    [WALLETCONNECT_STATUS_MAP.SIBMITTED]: {
-      content: 'Transaction submitted',
-      signTextContent: 'Signed',
-      color: '#27C193',
-      desc: 'Your transaction has been submitted',
-      image: '/images/ledger-status/success.jpg',
-    },
-    [WALLETCONNECT_STATUS_MAP.FAILD]: {
-      content: 'Transaction rejected',
-      signTextContent: 'Rejected',
-      color: '#EC5151',
-      image: '/images/ledger-status/error.png',
-    },
-  };
+
   const [connectStatus, setConnectStatus] = useState(
     WALLETCONNECT_STATUS_MAP.WAITING
   );

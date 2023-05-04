@@ -1,5 +1,5 @@
 import { Account } from '@/background/service/preference';
-import { KEYRING_CLASS } from '@/constant';
+import { KEYRING_CLASS, WALLET_BRAND_CONTENT } from '@/constant';
 import { AddressViewer } from '@/ui/component';
 import useCurrentBalance from '@/ui/hooks/useCurrentBalance';
 import { splitNumberByStep, useWallet } from '@/ui/utils';
@@ -8,6 +8,7 @@ import React from 'react';
 import { WalletConnectAccount } from './WalletConnectAccount';
 import { Chain } from '@debank/common';
 import { LedgerAccount } from './LedgerAccount';
+import { CommonAccount } from './CommonAccount';
 
 export interface Props {
   account: Account;
@@ -54,6 +55,18 @@ export const AccountInfo: React.FC<Props> = ({ account, chain }) => {
         <WalletConnectAccount chain={chain} account={account} />
       )}
       {account?.type === KEYRING_CLASS.HARDWARE.LEDGER && <LedgerAccount />}
+      {account?.type === KEYRING_CLASS.HARDWARE.ONEKEY && (
+        <CommonAccount
+          icon={WALLET_BRAND_CONTENT.ONEKEY.icon}
+          tip="Import by OneKey"
+        />
+      )}
+      {account?.type === KEYRING_CLASS.HARDWARE.TREZOR && (
+        <CommonAccount
+          icon={WALLET_BRAND_CONTENT.TREZOR.icon}
+          tip="Import by Trezor"
+        />
+      )}
     </div>
   );
 };

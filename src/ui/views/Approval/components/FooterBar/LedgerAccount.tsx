@@ -3,6 +3,7 @@ import clsx from 'clsx';
 import { WALLET_BRAND_CONTENT } from '@/constant';
 import { useCommonPopupView, useWallet } from '@/ui/utils';
 import { useLedgerDeviceConnected } from '@/utils/ledger';
+import { CommonAccount } from './CommonAccount';
 
 const LegerIcon = WALLET_BRAND_CONTENT.LEDGER.icon;
 
@@ -19,14 +20,14 @@ export const LedgerAccount: React.FC = () => {
     return hasConnectedLedgerHID ? 'CONNECTED' : 'DISCONNECTED';
   }, [hasConnectedLedgerHID, useLedgerLive]);
 
-  const bgColor = React.useMemo(() => {
+  const signal = React.useMemo(() => {
     switch (status) {
       case undefined:
       case 'DISCONNECTED':
-        return 'bg-gray-comment';
+        return 'DISCONNECTED';
 
       default:
-        return 'bg-green';
+        return 'CONNECTED';
     }
   }, [status]);
 
@@ -59,24 +60,6 @@ export const LedgerAccount: React.FC = () => {
   };
 
   return (
-    <section>
-      <div className={clsx('space-x-6 flex items-start', 'relative')}>
-        <div className="relative mt-[-2px]">
-          <img src={LegerIcon} className="w-[24px] h-[24px]" />
-          <div
-            className={clsx(
-              'rounded-full',
-              'w-[8px] h-[8px]',
-              'right-[-2px] bottom-[-2px] absolute',
-              'border border-white',
-              bgColor
-            )}
-          />
-        </div>
-        <div className="text-13 font-medium w-full">
-          <TipContent />
-        </div>
-      </div>
-    </section>
+    <CommonAccount signal={signal} icon={LegerIcon} tip={<TipContent />} />
   );
 };

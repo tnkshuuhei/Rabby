@@ -30,6 +30,12 @@ export const ActionGroup: React.FC<Props> = (props) => {
       {account.type === KEYRING_CLASS.HARDWARE.LEDGER && (
         <ProcessActions {...props} />
       )}
+      {account.type === KEYRING_CLASS.HARDWARE.ONEKEY && (
+        <ProcessActions {...props} />
+      )}
+      {account.type === KEYRING_CLASS.HARDWARE.TREZOR && (
+        <ProcessActions {...props} />
+      )}
       {account.type === KEYRING_CLASS.PRIVATE_KEY && (
         <SubmitActions {...props} />
       )}
