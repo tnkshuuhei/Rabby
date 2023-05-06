@@ -12,7 +12,6 @@ import {
   useDisplayBrandName,
 } from '@/ui/component/WalletConnect/useDisplayBrandName';
 import { useWalletConnectIcon } from '@/ui/component/WalletConnect/useWalletConnectIcon';
-
 import TXWaitingSVG from 'ui/assets/approval/tx-waiting.svg';
 import TXErrorSVG from 'ui/assets/approval/tx-error.svg';
 import TXSubmittedSVG from 'ui/assets/approval/tx-submitted.svg';
@@ -21,6 +20,7 @@ import { FooterResendButton } from './FooterResendButton';
 import { FooterDoneButton } from './FooterDoneButton';
 import { FooterResendCancelGroup } from './FooterResendCancelGroup';
 import { useInterval } from 'react-use';
+import { NetworkStatus } from './NetworkStatus';
 
 type Valueof<T> = T[keyof T];
 
@@ -31,6 +31,7 @@ const Process = ({
   onRetry,
   onCancel,
   onDone,
+  chain,
 }: {
   chain: CHAINS_ENUM;
   result: string;
@@ -52,19 +53,20 @@ const Process = ({
       WALLET_BRAND_CONTENT.WALLETCONNECT.icon
     );
   }, [brandRealUrl]);
-  const handleRetry = () => {
-    onRetry();
-  };
-  const handleCancel = () => {
-    onCancel();
-  };
-
   const [sendingCounter, setSendingCounter] = React.useState(5);
   const [image, setImage] = React.useState('');
   const [content, setContent] = React.useState('');
   const [description, setDescription] = React.useState('');
   const [contentColor, setContentColor] = React.useState('');
   const [iconColor, setIconColor] = React.useState('');
+
+  const handleRetry = () => {
+    onRetry();
+    setSendingCounter(5);
+  };
+  const handleCancel = () => {
+    onCancel();
+  };
 
   useInterval(() => {
     setSendingCounter((prev) => prev - 1);
@@ -76,12 +78,6 @@ const Process = ({
     }
     return status;
   }, [status, sendingCounter]);
-
-  React.useEffect(() => {
-    if (status === WALLETCONNECT_STATUS_MAP.CONNECTED) {
-      setSendingCounter(5);
-    }
-  }, [status]);
 
   React.useEffect(() => {
     setPopupViewTitle(`Sign with ${displayBrandName}`);
@@ -139,7 +135,7 @@ const Process = ({
     <div
       className={clsx(
         'flex flex-col items-center mt-[20px]',
-        'relative h-full'
+        'relative flex-1'
       )}
     >
       <div
@@ -172,7 +168,7 @@ const Process = ({
         {description}
       </div>
 
-      <div className="absolute bottom-[30px]">
+      <div className="absolute bottom-[8px]">
         {mergedStatus === WALLETCONNECT_STATUS_MAP.CONNECTED && (
           <FooterResend onResend={handleRetry} />
         )}
@@ -192,6 +188,10 @@ const Process = ({
           />
         )}
       </div>
+      <NetworkStatus
+        account={account}
+        className="absolute left-[-12px] bottom-[-16px]"
+      />
     </div>
   );
 };

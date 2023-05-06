@@ -2,7 +2,8 @@ import { Account } from '@/background/service/preference';
 import { KEYRINGS_LOGOS, WALLET_BRAND_CONTENT } from '@/constant';
 import { SessionSignal } from '@/ui/component/WalletConnect/SessionSignal';
 import { useDisplayBrandName } from '@/ui/component/WalletConnect/useDisplayBrandName';
-import { useStatus } from '@/ui/component/WalletConnect/useStatus';
+import { useSessionChainId } from '@/ui/component/WalletConnect/useSessionChainId';
+import { useSessionStatus } from '@/ui/component/WalletConnect/useSessionStatus';
 import { useWalletConnectIcon } from '@/ui/component/WalletConnect/useWalletConnectIcon';
 import { useCommonPopupView } from '@/ui/utils';
 import { Chain } from '@debank/common';
@@ -35,13 +36,17 @@ export const WalletConnectAccount: React.FC<Props> = ({ account, chain }) => {
     brandName,
     address
   );
-  const status = useStatus(
+  const status = useSessionStatus(
     {
       address,
       brandName,
     },
     pendingConnect
   );
+  const sessionChainId = useSessionChainId({
+    address,
+    brandName,
+  });
 
   React.useEffect(() => {
     if (status === 'CONNECTED') {
@@ -50,14 +55,12 @@ export const WalletConnectAccount: React.FC<Props> = ({ account, chain }) => {
   }, [status]);
 
   const tipStatus = React.useMemo(() => {
-    if (status === 'CHAIN_ERROR' && !chain) {
-      return 'CONNECTED';
+    if (chain && chain.id !== sessionChainId && status === 'CONNECTED') {
+      return 'CHAIN_ERROR';
     }
     switch (status) {
       case 'ACCOUNT_ERROR':
         return 'ACCOUNT_ERROR';
-      case 'CHAIN_ERROR':
-        return 'CHAIN_ERROR';
       case undefined:
       case 'DISCONNECTED':
       case 'RECEIVED':
@@ -68,14 +71,16 @@ export const WalletConnectAccount: React.FC<Props> = ({ account, chain }) => {
       default:
         return 'CONNECTED';
     }
-  }, [status, chain]);
+  }, [status, sessionChainId, chain]);
   const TipContent = () => {
     switch (tipStatus) {
       case 'ACCOUNT_ERROR':
         return (
           <div className="text-orange">
             <div>Connected but unable to sign.</div>
-            <div>Please switch to the correct address in mobile wallet</div>
+            <div className="whitespace-nowrap">
+              Please switch to the correct address in mobile wallet
+            </div>
           </div>
         );
       case 'CHAIN_ERROR':
@@ -123,6 +128,7 @@ export const WalletConnectAccount: React.FC<Props> = ({ account, chain }) => {
         <div className="relative mt-[-2px]">
           <img src={addressTypeIcon} className="w-[24px] h-[24px]" />
           <SessionSignal
+            chainId={chain?.id}
             pendingConnect={pendingConnect}
             isBadge
             address={address}
@@ -136,7 +142,7 @@ export const WalletConnectAccount: React.FC<Props> = ({ account, chain }) => {
           onClick={handleButton}
           className={clsx(
             'underline cursor-pointer',
-            'absolute right-[8px] top-[-1px]',
+            'absolute right-0 top-[-1px]',
             'text-13'
           )}
         >

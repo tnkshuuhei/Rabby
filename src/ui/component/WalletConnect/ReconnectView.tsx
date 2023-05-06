@@ -5,7 +5,7 @@ import { DEFAULT_BRIDGE } from '@rabby-wallet/eth-walletconnect-keyring';
 import React from 'react';
 import { Account } from 'background/service/preference';
 import Scan from '@/ui/views/Approval/components/WatchAddressWaiting/Scan';
-import { useStatus } from './useStatus';
+import { useSessionStatus } from './useSessionStatus';
 import { useDisplayBrandName } from './useDisplayBrandName';
 import { message } from 'antd';
 
@@ -22,7 +22,7 @@ export const ReconnectView: React.FC = () => {
   const [currentAccount, setCurrentAccount] = React.useState<Account | null>(
     null
   );
-  const status = useStatus(account);
+  const status = useSessionStatus(account);
   const [bridgeURL, setBridge] = React.useState<string>(DEFAULT_BRIDGE);
   const [displayBrandName] = useDisplayBrandName(
     account?.realBrandName || account?.brandName
@@ -32,8 +32,8 @@ export const ReconnectView: React.FC = () => {
     eventBus.addEventListener(EVENTS.WALLETCONNECT.INITED, ({ uri }) => {
       setQRcodeContent(uri);
     });
-    if (account) {
-      wallet.killWalletConnectConnector(
+    if (account && ['CONNECTED', 'DISCONNECTED'].includes(status as string)) {
+      await wallet.killWalletConnectConnector(
         account.address,
         account.brandName,
         true

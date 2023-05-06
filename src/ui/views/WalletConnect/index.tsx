@@ -12,7 +12,8 @@ import Mask from 'ui/assets/import-mask.png';
 import './style.less';
 import clsx from 'clsx';
 import IconWalletConnect from 'ui/assets/walletlogo/walletconnect.svg';
-import { useStatus } from '@/ui/component/WalletConnect/useStatus';
+import { useSessionStatus } from '@/ui/component/WalletConnect/useSessionStatus';
+import { useBrandNameHasWallet } from '@/ui/component/WalletConnect/useBrandNameHasWallet';
 
 const WalletConnectName = WALLET_BRAND_CONTENT['WALLETCONNECT']?.name;
 
@@ -27,8 +28,11 @@ const WalletConnectTemplate = () => {
   const [bridgeURL, setBridgeURL] = useState(DEFAULT_BRIDGE);
   const [brand, setBrand] = useState(location.state?.brand || {});
   const [ready, setReady] = useState(false);
-  const sessionStatus = useStatus();
-  const [runParams, setRunParams] = useState<Parameters<typeof run>>();
+  const sessionStatus = useSessionStatus();
+  const [runParams, setRunParams] = useState<
+    Parameters<typeof run> | undefined
+  >();
+  const [curStashId, setCurStashId] = useState<number | null>();
 
   const [run, loading] = useWalletRequest(wallet.importWalletConnect, {
     onSuccess(accounts) {
@@ -68,8 +72,9 @@ const WalletConnectTemplate = () => {
   const handleImportByWalletconnect = async () => {
     const { uri, stashId } = await wallet.initWalletConnect(
       brand.brand,
-      bridgeURL
+      curStashId
     );
+    setCurStashId(stashId);
     setWalletconnectUri(uri);
     await wallet.setPageStateCache({
       path: '/import/wallet-connect',
@@ -110,12 +115,15 @@ const WalletConnectTemplate = () => {
   useEffect(() => {
     if (sessionStatus === 'CONNECTED' && runParams?.length) {
       handleRun(runParams);
+    } else {
+      setRunParams(undefined);
     }
   }, [sessionStatus, runParams]);
 
   const handleClickBack = () => {
     if (history.length > 1) {
       history.goBack();
+      sessionStorage.setItem('SELECTED_WALLET_TYPE', 'mobile');
     } else {
       history.replace('/');
     }
@@ -183,6 +191,7 @@ const WalletConnectTemplate = () => {
   }, []);
 
   const brandName = brand.name === WalletConnectName ? 'Mobile' : brand.name;
+  const hasWallet = useBrandNameHasWallet(brandName);
 
   return (
     <div className="wallet-connect pb-0">
@@ -203,7 +212,8 @@ const WalletConnectTemplate = () => {
           />
         </div>
         <p className="text-[17px] leading-none mb-8 mt-0 text-white text-center font-bold">
-          Connect your {brandName} Wallet
+          Connect your {brandName}
+          {hasWallet ? '' : ' Wallet'}
         </p>
         <p className="text-13 leading-none mb-0 text-white font-medium text-center">
           {'via Wallet Connect'}

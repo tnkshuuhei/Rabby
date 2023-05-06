@@ -1,4 +1,5 @@
 import { Button } from 'antd';
+import clsx from 'clsx';
 import React from 'react';
 
 export interface Props {
@@ -15,7 +16,11 @@ export const ActionsContainer: React.FC<Props> = ({
       {children}
       <Button
         type="ghost"
-        className="w-[100px] h-[40px] border-blue-light text-blue-light"
+        className={clsx(
+          'w-[100px] h-[48px] border-blue-light text-blue-light',
+          'hover:bg-[#8697FF1A] active:bg-[#0000001A]',
+          'rounded-[8px]'
+        )}
         onClick={onClickCancel}
       >
         Cancel

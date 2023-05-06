@@ -1,9 +1,10 @@
 import React from 'react';
 import { SessionSignal } from './SessionSignal';
 import clsx from 'clsx';
-import { useStatus } from './useStatus';
+import { useSessionStatus } from './useSessionStatus';
 import { useWallet, useCommonPopupView } from '@/ui/utils';
 import { useDisplayBrandName } from './useDisplayBrandName';
+import { message } from 'antd';
 
 interface Props {
   address: string;
@@ -17,7 +18,7 @@ export const SessionStatusBar: React.FC<Props> = ({
   className,
 }) => {
   const [pendingConnect, setPendingConnect] = React.useState(false);
-  const status = useStatus(
+  const status = useSessionStatus(
     {
       address,
       brandName,
@@ -35,8 +36,6 @@ export const SessionStatusBar: React.FC<Props> = ({
     switch (status) {
       case 'ACCOUNT_ERROR':
         return 'ACCOUNT_ERROR';
-      case 'CHAIN_ERROR':
-        return 'CHAIN_ERROR';
       case undefined:
       case 'DISCONNECTED':
       case 'RECEIVED':
@@ -57,13 +56,12 @@ export const SessionStatusBar: React.FC<Props> = ({
     });
     if (tipStatus === 'CONNECTED') {
       wallet.killWalletConnectConnector(address, brandName, true);
+      message.success('Disconnected');
     } else if (tipStatus === 'DISCONNECTED') {
       setVisible('WalletConnect');
       setPendingConnect(true);
     } else if (tipStatus === 'ACCOUNT_ERROR') {
       setVisible('SwitchAddress');
-    } else if (tipStatus === 'CHAIN_ERROR') {
-      setVisible('SwitchChain');
     }
   };
 

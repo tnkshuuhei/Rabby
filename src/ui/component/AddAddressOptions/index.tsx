@@ -75,6 +75,24 @@ const AddAddressOptions = () => {
           },
         });
 
+  // keep selected wallet type
+  const rootRef = React.useRef<HTMLDivElement>(null);
+  React.useEffect(() => {
+    if (sessionStorage.getItem('SELECTED_WALLET_TYPE') === 'mobile') {
+      setSelectedWalletType('mobile');
+      setTimeout(() => {
+        rootRef.current?.querySelector('.mobile')?.scrollIntoView({
+          behavior: 'smooth',
+        });
+      }, 150);
+    }
+
+    // clear cache when leave page
+    return () => {
+      sessionStorage.removeItem('SELECTED_WALLET_TYPE');
+    };
+  }, []);
+
   type Valueof<T> = T[keyof T];
   const connectRouter1 = React.useCallback(
     (history, item: Valueof<typeof WALLET_BRAND_CONTENT>) => {
@@ -221,7 +239,7 @@ const AddAddressOptions = () => {
   );
 
   return (
-    <div className="rabby-container">
+    <div className="rabby-container" ref={rootRef}>
       {[createIMportAddrList, centerList].map((items, index) => (
         <div className="bg-white rounded-[6px] mb-[20px]" key={index}>
           {items.map((e) => {
@@ -244,7 +262,7 @@ const AddAddressOptions = () => {
               <Item
                 hoverBorder={false}
                 leftIcon={item.icon}
-                className="bg-transparent"
+                className={clsx('bg-transparent', item.key)}
                 rightIconClassName={clsx(
                   'ml-[8px] transition-transform',
                   isSelected ? '-rotate-90' : 'rotate-90'

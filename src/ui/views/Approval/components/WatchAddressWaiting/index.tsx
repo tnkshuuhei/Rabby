@@ -12,6 +12,7 @@ import { useApproval, useWallet } from 'ui/utils';
 import eventBus from '@/eventBus';
 import Process from './Process';
 import Scan from './Scan';
+import { message } from 'antd';
 
 interface ApprovalParams {
   address: string;
@@ -90,6 +91,7 @@ const WatchAddressWaiting = ({ params }: { params: ApprovalParams }) => {
     setConnectStatus(WALLETCONNECT_STATUS_MAP.PENDING);
     setConnectError(null);
     wallet.resendWalletConnect();
+    message.success('Request successfully sent.');
   };
 
   const handleRefreshQrCode = () => {

@@ -865,6 +865,18 @@ export class KeyringService extends EventEmitter {
           params: data,
         });
       });
+      keyring.on('sessionAccountChange', (data) => {
+        eventBus.emit(EVENTS.broadcastToUI, {
+          method: EVENTS.WALLETCONNECT.SESSION_ACCOUNT_CHANGED,
+          params: data,
+        });
+      });
+      keyring.on('sessionNetworkDelay', (data) => {
+        eventBus.emit(EVENTS.broadcastToUI, {
+          method: EVENTS.WALLETCONNECT.SESSION_NETWORK_DELAY,
+          params: data,
+        });
+      });
     }
     if (keyring.type === KEYRING_CLASS.GNOSIS) {
       (keyring as GnosisKeyring).on(TransactionBuiltEvent, (data) => {

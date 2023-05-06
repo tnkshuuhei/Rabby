@@ -1330,11 +1330,39 @@ export class WalletController extends BaseController {
     return null;
   };
 
-  initWalletConnect = async (brandName: string, bridge?: string) => {
+  getWalletConnectSessionNetworkDelay = (
+    address: string,
+    brandName: string
+  ) => {
+    const keyringType = KEYRING_CLASS.WALLETCONNECT;
+    const keyring: WalletConnectKeyring = this._getKeyringByType(keyringType);
+    if (keyring) {
+      return keyring.getSessionNetworkDelay(address, brandName);
+    }
+    return null;
+  };
+
+  getWalletConnectSessionAccount = (address: string, brandName: string) => {
+    const keyringType = KEYRING_CLASS.WALLETCONNECT;
+    const keyring: WalletConnectKeyring = this._getKeyringByType(keyringType);
+    if (keyring) {
+      return keyring.getSessionAccount(address, brandName);
+    }
+    return null;
+  };
+
+  walletConnectInstalled = false;
+
+  initWalletConnect = async (brandName: string, curStashId?: number | null) => {
     let keyring: WalletConnectKeyring, isNewKey;
     const keyringType = KEYRING_CLASS.WALLETCONNECT;
     try {
-      keyring = this._getKeyringByType(keyringType);
+      if (curStashId !== null && curStashId !== undefined) {
+        keyring = stashKeyrings[curStashId];
+        isNewKey = false;
+      } else {
+        keyring = this._getKeyringByType(keyringType);
+      }
     } catch {
       const WalletConnect = keyringService.getKeyringClassForType(keyringType);
       keyring = new WalletConnect({
@@ -1349,8 +1377,8 @@ export class WalletController extends BaseController {
       });
       isNewKey = true;
     }
-    const { uri } = await keyring.initConnector(brandName, bridge);
-    let stashId: null | number = null;
+    const { uri } = await keyring.initConnector(brandName);
+    let stashId = curStashId;
     if (isNewKey) {
       stashId = this.addKeyringToStash(keyring);
       eventBus.addEventListener(
@@ -1385,6 +1413,18 @@ export class WalletController extends BaseController {
       keyring.on('sessionStatusChange', (data) => {
         eventBus.emit(EVENTS.broadcastToUI, {
           method: EVENTS.WALLETCONNECT.SESSION_STATUS_CHANGED,
+          params: data,
+        });
+      });
+      keyring.on('sessionAccountChange', (data) => {
+        eventBus.emit(EVENTS.broadcastToUI, {
+          method: EVENTS.WALLETCONNECT.SESSION_ACCOUNT_CHANGED,
+          params: data,
+        });
+      });
+      keyring.on('sessionNetworkDelay', (data) => {
+        eventBus.emit(EVENTS.broadcastToUI, {
+          method: EVENTS.WALLETCONNECT.SESSION_NETWORK_DELAY,
           params: data,
         });
       });

@@ -1,4 +1,4 @@
-import { EVENTS } from '@/constant';
+import { EVENTS, WALLET_BRAND_TYPES } from '@/constant';
 import eventBus from '@/eventBus';
 import { isSameAddress, useWallet } from '@/ui/utils';
 import { WALLETCONNECT_SESSION_STATUS_MAP } from '@rabby-wallet/eth-walletconnect-keyring';
@@ -12,7 +12,7 @@ type Status = keyof typeof WALLETCONNECT_SESSION_STATUS_MAP;
  * @param account
  * @param pendingConnect - Update status only when it is CONNECTED
  */
-export const useStatus = (
+export const useSessionStatus = (
   account?: { address: string; brandName: string },
   pendingConnect?: boolean
 ) => {
@@ -30,7 +30,10 @@ export const useStatus = (
           data.brandName === account.brandName)
       ) {
         updated = data.status;
-      } else if (data.brandName !== account.brandName) {
+      } else if (
+        data.brandName !== account.brandName &&
+        data.brandName !== WALLET_BRAND_TYPES.WALLETCONNECT
+      ) {
         updated = 'BRAND_NAME_ERROR';
       } else if (!isSameAddress(data.address, account.address)) {
         updated = 'ACCOUNT_ERROR';

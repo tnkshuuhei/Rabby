@@ -128,7 +128,6 @@ class NotificationService extends Events {
     } else {
       this.currentApproval = null;
       this.approvals = [];
-      this.notifiWindowId = null;
     }
   };
 

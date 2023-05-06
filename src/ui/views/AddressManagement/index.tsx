@@ -194,6 +194,9 @@ const AddressManagement = () => {
     );
   };
 
+  const isWalletConnect =
+    accountList[currentAccountIndex].type === KEYRING_CLASS.WALLETCONNECT;
+
   return (
     <div className="page-address-management px-0 overflow-hidden">
       <PageHeader className="pt-[24px] mx-[20px]">
@@ -244,8 +247,7 @@ const AddressManagement = () => {
                 );
               }}
             >
-              {accountList[currentAccountIndex].type ===
-                KEYRING_CLASS.WALLETCONNECT && (
+              {isWalletConnect && (
                 <SessionStatusBar
                   address={accountList[currentAccountIndex].address || ''}
                   brandName={accountList[currentAccountIndex].brandName || ''}
@@ -263,7 +265,7 @@ const AddressManagement = () => {
         <>
           <div className={'address-group-list management'}>
             <VList
-              height={500}
+              height={isWalletConnect ? 450 : 500}
               width="100%"
               itemData={accountList}
               itemCount={accountList.length}

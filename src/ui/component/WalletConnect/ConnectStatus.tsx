@@ -4,9 +4,10 @@ import clsx from 'clsx';
 import TipInfoSVG from 'ui/assets/approval/tip-info.svg';
 import TipWarningSVG from 'ui/assets/approval/tip-warning.svg';
 import TipSuccessSVG from 'ui/assets/approval/tip-success.svg';
-import { useStatus } from './useStatus';
+import { useSessionStatus } from './useSessionStatus';
 import { Account } from '@/background/service/preference';
 import { useDisplayBrandName } from './useDisplayBrandName';
+import { useBrandNameHasWallet } from './useBrandNameHasWallet';
 
 interface Props {
   brandName?: string;
@@ -14,28 +15,57 @@ interface Props {
   uri: string;
 }
 export const ConnectStatus: React.FC<Props> = ({ brandName, account }) => {
-  const status = useStatus(account);
+  const status = useSessionStatus(account);
   const [displayBrandName] = useDisplayBrandName(brandName);
-
-  const hasWallet = /[wW]allet$/.test(displayBrandName);
+  const hasWallet = useBrandNameHasWallet(displayBrandName);
+  const IconClassName = 'inline-block mr-[6px] w-[14px] h-[14px] mb-2';
 
   const statusText = React.useMemo(() => {
     switch (status) {
       case 'RECEIVED':
-        return 'Scan successful. Waiting to be confirmed';
+        return (
+          <div className="py-[15px]">
+            <img src={TipSuccessSVG} className={IconClassName} />
+            Scan successful. Waiting to be confirmed
+          </div>
+        );
       case 'REJECTED':
       case 'DISCONNECTED':
-        return 'Connection canceled. Please scan the QR code to retry.';
+        return (
+          <div className="py-[15px]">
+            <img src={TipInfoSVG} className={IconClassName} />
+            Connection canceled. Please scan the QR code to retry.
+          </div>
+        );
       case 'BRAND_NAME_ERROR':
-        return `Wrong wallet app. Please use ${displayBrandName} to connect`;
+        return (
+          <div className="py-[8px]">
+            <div>
+              <img src={TipWarningSVG} className={IconClassName} />
+              Wrong wallet app.
+            </div>
+            <div>Please use {displayBrandName} to connect</div>
+          </div>
+        );
       case 'ACCOUNT_ERROR':
-        return 'Address not match. Please switch address in your mobile wallet';
+        return (
+          <div className="py-[8px]">
+            <div>
+              <img src={TipWarningSVG} className={IconClassName} />
+              Address not match.
+            </div>
+            <div>Please switch address in your mobile wallet</div>
+          </div>
+        );
       case 'CONNECTED':
-        return 'Connected';
+        return <div className="py-[15px]">Connected</div>;
       default:
-        return `Scan with your ${displayBrandName}${
-          hasWallet ? '' : ' wallet'
-        }`;
+        return (
+          <div className="py-[15px]">
+            Scan with your {displayBrandName}
+            {hasWallet ? '' : ' wallet'}
+          </div>
+        );
     }
   }, [status, displayBrandName]);
 
@@ -45,6 +75,7 @@ export const ConnectStatus: React.FC<Props> = ({ brandName, account }) => {
       case 'CONNECTED':
         return 'success';
       case 'BRAND_NAME_ERROR':
+      case 'ACCOUNT_ERROR':
         return 'warning';
       case 'REJECTED':
       case 'DISCONNECTED':
@@ -53,24 +84,13 @@ export const ConnectStatus: React.FC<Props> = ({ brandName, account }) => {
     }
   }, [status]);
 
-  const Icon = React.useMemo(() => {
-    switch (type) {
-      case 'success':
-        return TipSuccessSVG;
-      case 'warning':
-        return TipWarningSVG;
-      case 'info':
-      default:
-        return TipInfoSVG;
-    }
-  }, [type]);
-
   return (
     <div
       className={clsx(
         'session-status',
-        'py-[15px] px-[30px] rounded-[4px] mt-[40px] m-auto',
+        'rounded-[4px] mt-[40px] m-auto',
         'w-[360px] text-center leading-none',
+        'text-13',
         {
           'bg-[#E5E9EF] text-[#4B4D59] font-medium': !type || type === 'info',
           'bg-[#27C1930D] text-[#27C193]': type === 'success',
@@ -78,9 +98,6 @@ export const ConnectStatus: React.FC<Props> = ({ brandName, account }) => {
         }
       )}
     >
-      {Icon && (
-        <img src={Icon} className="inline-block mr-[6px] w-[14px] h-[14px]" />
-      )}
       {statusText}
     </div>
   );

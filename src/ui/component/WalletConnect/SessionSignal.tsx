@@ -1,6 +1,7 @@
 import React from 'react';
-import { useStatus } from './useStatus';
+import { useSessionStatus } from './useSessionStatus';
 import clsx from 'clsx';
+import { useSessionChainId } from './useSessionChainId';
 
 interface Props {
   size?: 'small' | 'normal';
@@ -9,6 +10,7 @@ interface Props {
   brandName: string;
   className?: string;
   pendingConnect?: boolean;
+  chainId?: number;
 }
 
 export const SessionSignal: React.FC<Props> = ({
@@ -18,16 +20,25 @@ export const SessionSignal: React.FC<Props> = ({
   brandName,
   className,
   pendingConnect,
+  chainId,
 }) => {
-  const status = useStatus(
+  const status = useSessionStatus(
     {
       address,
       brandName,
     },
     pendingConnect
   );
+  const sessionChainId = useSessionChainId({
+    address,
+    brandName,
+  });
 
   const bgColor = React.useMemo(() => {
+    if (chainId && chainId !== sessionChainId && status === 'CONNECTED') {
+      return 'bg-orange';
+    }
+
     switch (status) {
       case 'ACCOUNT_ERROR':
       case 'BRAND_NAME_ERROR':
@@ -42,7 +53,7 @@ export const SessionSignal: React.FC<Props> = ({
       default:
         return 'bg-green';
     }
-  }, [status]);
+  }, [status, chainId, sessionChainId]);
 
   return (
     <div

@@ -1,8 +1,11 @@
 import { Button, Tooltip } from 'antd';
 import React from 'react';
 import { ActionsContainer } from './ActionsContainer';
-import { useStatus } from '@/ui/component/WalletConnect/useStatus';
+import { useSessionStatus } from '@/ui/component/WalletConnect/useSessionStatus';
 import { Account } from '@/background/service/preference';
+import { useSessionChainId } from '@/ui/component/WalletConnect/useSessionChainId';
+import { Chain } from '@debank/common';
+import clsx from 'clsx';
 
 export interface Props {
   onProcess(): void;
@@ -11,6 +14,7 @@ export interface Props {
   disabledProcess: boolean;
   enableTooltip?: boolean;
   tooltipContent?: string;
+  chain?: Chain;
 }
 
 export const ProcessActions: React.FC<Props> = ({
@@ -20,8 +24,10 @@ export const ProcessActions: React.FC<Props> = ({
   disabledProcess,
   tooltipContent,
   enableTooltip,
+  chain,
 }) => {
-  const status = useStatus(account);
+  const status = useSessionStatus(account);
+  const sessionChainId = useSessionChainId(account);
 
   return (
     <ActionsContainer onClickCancel={onCancel}>
@@ -31,10 +37,18 @@ export const ProcessActions: React.FC<Props> = ({
       >
         <div>
           <Button
-            disabled={status !== 'CONNECTED' || disabledProcess}
+            disabled={
+              status !== 'CONNECTED' ||
+              (chain && sessionChainId !== chain.id) ||
+              disabledProcess
+            }
             type="ghost"
-            size="large"
-            className="w-[244px] h-[40px] border-blue-light text-blue-light"
+            className={clsx(
+              'w-[244px] h-[48px] border-blue-light text-blue-light',
+              'hover:bg-[#8697FF1A] active:bg-[#0000001A]',
+              'disabled:bg-transparent disabled:opacity-40 disabled:hover:bg-transparent',
+              'rounded-[8px]'
+            )}
             onClick={onProcess}
           >
             Begin signing process

@@ -12,7 +12,7 @@ import IconQRCodeRefresh from 'ui/assets/qrcoderefresh.svg';
 import IconCopy from 'ui/assets/urlcopy.svg';
 import IconRefresh from 'ui/assets/urlrefresh.svg';
 import { ConnectStatus } from './WalletConnect/ConnectStatus';
-import { useStatus } from './WalletConnect/useStatus';
+import { useSessionStatus } from './WalletConnect/useSessionStatus';
 import { Account } from '@/background/service/preference';
 
 interface Props {
@@ -43,7 +43,7 @@ const ScanCopyQRCode: React.FC<Props> = ({
   const { t } = useTranslation();
   const [copySuccess, setCopySuccess] = useState(false);
   const [showOpenApiModal, setShowOpenApiModal] = useState(false);
-  const status = useStatus(account);
+  const status = useSessionStatus(account);
 
   const handleCopyCurrentAddress = () => {
     const clipboard = new ClipboardJS('.wallet-connect', {
