@@ -1,9 +1,9 @@
 import React from 'react';
-import { useLedgerStatus } from './useLedgerStatus';
 import { Signal, Props } from '../Signal';
+import { useLedgerStatusWithEvent } from './useLedgerStatusWithEvent';
 
 export const LedgerSignal: React.FC<Omit<Props, 'color'>> = (props) => {
-  const { status } = useLedgerStatus();
+  const { status } = useLedgerStatusWithEvent();
 
   const signalColor = React.useMemo(() => {
     switch (status) {

@@ -1,14 +1,14 @@
 import React from 'react';
-import { useLedgerStatus } from './useLedgerStatus';
 import { CommonStatusBar } from './CommonStatusBar';
 import { LedgerSignal } from './LedgerSignal';
+import { useLedgerStatusWithEvent } from './useLedgerStatusWithEvent';
 
 interface Props {
   className?: string;
 }
 
 export const LedgerStatusBar: React.FC<Props> = ({ className }) => {
-  const { status, content, onClickConnect } = useLedgerStatus();
+  const { status, content, onClickConnect } = useLedgerStatusWithEvent();
 
   return (
     <CommonStatusBar
