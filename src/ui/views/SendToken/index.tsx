@@ -44,12 +44,15 @@ import './style.less';
 import { getKRCategoryByType } from '@/utils/transaction';
 import { filterRbiSource, useRbiSource } from '@/ui/utils/ga-event';
 import { UIContactBookItem } from '@/background/service/contactBook';
-import { findChainByEnum, findChainByServerID } from '@/utils/chain';
+import {
+  findChainByEnum,
+  findChainByServerID,
+  makeTokenFromChain,
+} from '@/utils/chain';
 import ChainSelectorInForm from '@/ui/component/ChainSelector/InForm';
 import { confirmAllowTransferToPromise } from './components/ModalConfirmAllowTransfer';
 import { confirmAddToContactsModalPromise } from './components/ModalConfirmAddToContacts';
 import LessPalette from '@/ui/style/var-defs';
-import { useAsyncInitializeChainList } from '@/ui/hooks/useChain';
 
 const MaxButton = styled.img`
   cursor: pointer;
@@ -62,12 +65,6 @@ const SendToken = () => {
   const [currentAccount, setCurrentAccount] = useState<Account | null>(null);
 
   const [chain, setChain] = useState(CHAINS_ENUM.ETH);
-  const { markFinishInitializeChainExternally } = useAsyncInitializeChainList({
-    supportChains: undefined,
-    onChainInitializedAsync: (firstEnum) => {
-      setChain(firstEnum);
-    },
-  });
 
   const chainItem = useMemo(() => findChainByEnum(chain), [chain]);
   const { t } = useTranslation();
@@ -626,13 +623,20 @@ const SendToken = () => {
         loadCurrentToken(currentToken.id, currentToken.chain, account.address);
         return;
       }
-      markFinishInitializeChainExternally(target.enum);
       setChain(target.enum);
       loadCurrentToken(id, tokenChain, account.address);
     } else {
+      const { firstChain } = await dispatch.chains.getOrderedChainList({
+        supportChains: undefined,
+      });
+      const tokenFromOrder = firstChain ? makeTokenFromChain(firstChain) : null;
+
       const lastTimeToken = await wallet.getLastTimeSendToken(account.address);
       if (lastTimeToken) setCurrentToken(lastTimeToken);
-      let needLoadToken: TokenItem = lastTimeToken || currentToken;
+      else if (firstChain) setCurrentToken(tokenFromOrder!);
+
+      let needLoadToken: TokenItem =
+        lastTimeToken || tokenFromOrder || currentToken;
       if (await wallet.hasPageStateCache()) {
         const cache = await wallet.getPageStateCache();
         if (cache?.path === history.location.pathname) {
@@ -654,7 +658,6 @@ const SendToken = () => {
         const target = Object.values(CHAINS).find(
           (item) => item.serverId === needLoadToken.chain
         )!;
-        markFinishInitializeChainExternally(target.enum);
         setChain(target.enum);
       }
       loadCurrentToken(needLoadToken.id, needLoadToken.chain, account.address);
