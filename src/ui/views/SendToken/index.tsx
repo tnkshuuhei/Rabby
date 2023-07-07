@@ -53,6 +53,7 @@ import ChainSelectorInForm from '@/ui/component/ChainSelector/InForm';
 import { confirmAllowTransferToPromise } from './components/ModalConfirmAllowTransfer';
 import { confirmAddToContactsModalPromise } from './components/ModalConfirmAddToContacts';
 import LessPalette from '@/ui/style/var-defs';
+import AccountSearchInput from '@/ui/component/AccountSearchInput';
 
 const MaxButton = styled.img`
   cursor: pointer;
@@ -857,11 +858,20 @@ const SendToken = () => {
                   },
                 ]}
               >
-                <Input
+                <AccountSearchInput
                   placeholder={t('Enter the address')}
                   autoComplete="off"
                   autoFocus
                   spellCheck={false}
+                  onSelectedAccount={(account) => {
+                    const nextVals = {
+                      ...form.getFieldsValue(),
+                      to: account.address,
+                    };
+                    handleFormValuesChange({ to: nextVals.to }, nextVals);
+                    form.setFieldsValue(nextVals);
+                    setAmountFocus(true);
+                  }}
                 />
               </Form.Item>
               {toAddressIsValid && !toAddressInContactBook && (

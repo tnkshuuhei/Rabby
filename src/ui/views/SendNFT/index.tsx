@@ -38,6 +38,7 @@ import ChainSelectorInForm from '@/ui/component/ChainSelector/InForm';
 import { confirmAllowTransferToPromise } from '../SendToken/components/ModalConfirmAllowTransfer';
 import { confirmAddToContactsModalPromise } from '../SendToken/components/ModalConfirmAddToContacts';
 import LessPalette from '@/ui/style/var-defs';
+import AccountSearchInput from '@/ui/component/AccountSearchInput';
 
 const SendNFT = () => {
   const wallet = useWallet();
@@ -452,10 +453,24 @@ const SendNFT = () => {
                     },
                   ]}
                 >
-                  <Input
+                  <AccountSearchInput
                     placeholder={t('Enter the address')}
                     autoComplete="off"
                     autoFocus
+                    spellCheck={false}
+                    onSelectedAccount={(account) => {
+                      const nextVals = {
+                        ...form.getFieldsValue(),
+                        to: account.address,
+                      };
+                      form.setFieldsValue(nextVals);
+                      handleFormValuesChange(
+                        {
+                          to: nextVals.to,
+                        },
+                        nextVals
+                      );
+                    }}
                   />
                 </Form.Item>
                 {toAddressIsValid && !toAddressInContactBook && (
