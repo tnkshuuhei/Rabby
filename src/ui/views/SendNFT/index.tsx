@@ -454,7 +454,7 @@ const SendNFT = () => {
                   ]}
                 >
                   <AccountSearchInput
-                    placeholder={t('Enter the address')}
+                    placeholder={'Enter address or search'}
                     autoComplete="off"
                     autoFocus
                     spellCheck={false}
